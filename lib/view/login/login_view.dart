@@ -59,7 +59,7 @@ class _LoginViewState extends State<LoginView> {
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(
-                height: 25,
+                height: 26,
               ),
               RoundTextfield(
                 hintText: "Password",
