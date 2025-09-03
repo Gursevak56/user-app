@@ -71,7 +71,7 @@ class _OfferViewState extends State<OfferView> {
     return Scaffold(
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -101,6 +101,7 @@ class _OfferViewState extends State<OfferView> {
                         "assets/img/shopping_cart.png",
                         width: 25,
                         height: 25,
+                        color: TColor.primary,
                       ),
                     ),
                   ],

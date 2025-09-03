@@ -129,6 +129,7 @@ class _MenuItemsViewState extends State<MenuItemsView> {
                         "assets/img/shopping_cart.png",
                         width: 25,
                         height: 25,
+                        color: TColor.primary,
                       ),
                     ),
                   ],
@@ -159,7 +160,7 @@ class _MenuItemsViewState extends State<MenuItemsView> {
               ListView.builder(
                 physics: const NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
-                padding: EdgeInsets.zero,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
                 itemCount: menuItemsArr.length,
                 itemBuilder: ((context, index) {
                   var mObj = menuItemsArr[index] as Map? ?? {};
