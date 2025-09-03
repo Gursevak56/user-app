@@ -120,6 +120,7 @@ class _InboxViewState extends State<InboxView> {
                         "assets/img/shopping_cart.png",
                         width: 25,
                         height: 25,
+                        color: TColor.primary,
                       ),
                     ),
                   ],

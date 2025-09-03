@@ -135,6 +135,7 @@ class _HomeViewState extends State<HomeView> {
                         "assets/img/shopping_cart.png",
                         width: 25,
                         height: 25,
+                        color: TColor.primary,
                       ),
                     ),
                   ],
@@ -173,6 +174,7 @@ class _HomeViewState extends State<HomeView> {
                           "assets/img/dropdown.png",
                           width: 12,
                           height: 12,
+                          color: TColor.primary,
                         )
                       ],
                     )
@@ -226,7 +228,7 @@ class _HomeViewState extends State<HomeView> {
               ListView.builder(
                 physics: const NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
-                padding: EdgeInsets.zero,
+                padding:const EdgeInsets.symmetric(horizontal: 8),
                 itemCount: popArr.length,
                 itemBuilder: ((context, index) {
                   var pObj = popArr[index] as Map? ?? {};

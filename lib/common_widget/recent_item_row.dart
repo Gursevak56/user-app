@@ -12,6 +12,7 @@ class RecentItemRow extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: InkWell(
+        borderRadius: BorderRadius.circular(10),
         onTap: onTap,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,

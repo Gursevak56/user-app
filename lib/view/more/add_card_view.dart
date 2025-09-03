@@ -106,6 +106,7 @@ class _AddCardViewState extends State<AddCardView> {
               hintText: "Card Security Code",
               controller: txtCardCode,
               keyboardType: TextInputType.number,
+              obscureText: true,
             ),
             const SizedBox(
               height: 15,

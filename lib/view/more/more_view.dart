@@ -90,6 +90,7 @@ class _MoreViewState extends State<MoreView> {
                         "assets/img/shopping_cart.png",
                         width: 25,
                         height: 25,
+                        color: TColor.primary,
                       ),
                     ),
                   ],
@@ -153,7 +154,7 @@ class _MoreViewState extends State<MoreView> {
                                   vertical: 12, horizontal: 12),
                               decoration: BoxDecoration(
                                   color: TColor.textfield,
-                                  borderRadius: BorderRadius.circular(5)),
+                                  borderRadius: BorderRadius.circular(10)),
                               margin: const EdgeInsets.only(right: 15),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,

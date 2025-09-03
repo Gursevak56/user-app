@@ -59,6 +59,7 @@ class _ProfileViewState extends State<ProfileView> {
                     "assets/img/shopping_cart.png",
                     width: 25,
                     height: 25,
+                    color: TColor.primary,
                   ),
                 ),
               ],

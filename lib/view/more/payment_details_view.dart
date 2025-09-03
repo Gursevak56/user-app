@@ -67,6 +67,7 @@ class _PaymentDetailsViewState extends State<PaymentDetailsView> {
                         "assets/img/shopping_cart.png",
                         width: 25,
                         height: 25,
+                        color: TColor.primary,
                       ),
                     ),
                   ],
@@ -93,117 +94,122 @@ class _PaymentDetailsViewState extends State<PaymentDetailsView> {
               const SizedBox(
                 height: 15,
               ),
-              Container(
-                decoration: BoxDecoration(
-                    color: TColor.textfield,
-                    boxShadow: const [
-                      BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 15,
-                          offset: Offset(0, 9))
-                    ]),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 15, horizontal: 35),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Cash/Card On Delivery",
-                            style: TextStyle(
-                                color: TColor.primaryText,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700),
-                          ),
-                          Image.asset(
-                            "assets/img/check.png",
-                            width: 20,
-                            height: 20,
-                          ),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 35),
-                      child: Divider(
-                        color: TColor.secondaryText.withOpacity(0.4),
-                        height: 1,
-                      ),
-                    ),
-                    ListView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      padding: EdgeInsets.zero,
-                      itemCount: cardArr.length,
-                      itemBuilder: ((context, index) {
-                        var cObj = cardArr[index] as Map? ?? {};
-                        return Container(
-                          margin: const EdgeInsets.symmetric(
-                              vertical: 15, horizontal: 35),
-                          child: Row(
-                            children: [
-                              Image.asset(
-                                cObj["icon"].toString(),
-                                width: 50,
-                                height: 35,
-                                fit: BoxFit.contain,
-                              ),
-                              const SizedBox(
-                                width: 15,
-                              ),
-                              Expanded(
-                                child: Text(
-                                  cObj["card"].toString(),
-                                  style: TextStyle(
-                                      color: TColor.secondaryText,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600),
-                                ),
-                              ),
-                              SizedBox(
-                                width: 100,
-                                height: 28,
-                                child: RoundButton(
-                                  title: 'Delete Card',
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                      color: TColor.textfield,
+                      boxShadow: const [
+                        BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 15,
+                            offset: Offset(0, 9))
+                      ]),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 15, horizontal: 35),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Cash/Card On Delivery",
+                              style: TextStyle(
+                                  color: TColor.primaryText,
                                   fontSize: 12,
-                                  onPressed: () {},
-                                  type: RoundButtonType.textPrimary,
+                                  fontWeight: FontWeight.w700),
+                            ),
+                            Image.asset(
+                              "assets/img/check.png",
+                              width: 20,
+                              height: 20,
+                              color: TColor.primary,
+                            ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 35),
+                        child: Divider(
+                          color: TColor.secondaryText.withOpacity(0.4),
+                          height: 1,
+                        ),
+                      ),
+                      ListView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        padding: EdgeInsets.zero,
+                        itemCount: cardArr.length,
+                        itemBuilder: ((context, index) {
+                          var cObj = cardArr[index] as Map? ?? {};
+                          return Container(
+                            margin: const EdgeInsets.symmetric(
+                                vertical: 15, horizontal: 35),
+                            child: Row(
+                              children: [
+                                Image.asset(
+                                  cObj["icon"].toString(),
+                                  width: 50,
+                                  height: 35,
+                                  fit: BoxFit.contain,
                                 ),
-                              )
-                            ],
-                          ),
-                        );
-                      }),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 35),
-                      child: Divider(
-                        color: TColor.secondaryText.withOpacity(0.4),
-                        height: 1,
+                                const SizedBox(
+                                  width: 15,
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    cObj["card"].toString(),
+                                    style: TextStyle(
+                                        color: TColor.secondaryText,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 100,
+                                  height: 28,
+                                  child: RoundButton(
+                                    title: 'Delete Card',
+                                    fontSize: 12,
+                                    onPressed: () {},
+                                    type: RoundButtonType.textPrimary,
+                                  ),
+                                )
+                              ],
+                            ),
+                          );
+                        }),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 15, horizontal: 35),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Other Methods",
-                            style: TextStyle(
-                                color: TColor.primaryText,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700),
-                          ),
-                        ],
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 35),
+                        child: Divider(
+                          color: TColor.secondaryText.withOpacity(0.4),
+                          height: 1,
+                        ),
                       ),
-                    ),
-                    const SizedBox(
-                      height: 15,
-                    ),
-                  ],
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 15, horizontal: 35),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Other Methods",
+                              style: TextStyle(
+                                  color: TColor.primaryText,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 15,
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(

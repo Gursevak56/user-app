@@ -20,11 +20,14 @@ class PopularRestaurantRow extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.asset(
-              pObj["image"].toString(),
-              width: double.maxFinite,
-              height: 200,
-              fit: BoxFit.cover,
+            ClipRRect(
+              borderRadius: BorderRadiusGeometry.circular(10),
+              child: Image.asset(
+                pObj["image"].toString(),
+                width: double.maxFinite,
+                height: 200,
+                fit: BoxFit.cover,
+              ),
             ),
             const SizedBox(width: 8),
             const SizedBox(height: 12),
