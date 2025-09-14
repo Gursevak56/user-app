@@ -104,7 +104,7 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                                                     horizontal: 1.0),
                                             itemBuilder: (context, _) => Icon(
                                               Icons.star,
-                                              color: TColor.primary,
+                                              color: TColor.secondary,
                                             ),
                                             onRatingUpdate: (rating) {
                                               print(rating);
@@ -308,7 +308,7 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                                         height: 25,
                                         alignment: Alignment.center,
                                         decoration: BoxDecoration(
-                                            color: TColor.primary,
+                                            color: TColor.secondary,
                                             borderRadius:
                                                 BorderRadius.circular(12.5)),
                                         child: Text(
@@ -357,7 +357,7 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                                         height: 25,
                                         alignment: Alignment.center,
                                         decoration: BoxDecoration(
-                                            color: TColor.primary,
+                                            color: TColor.secondary,
                                             borderRadius:
                                                 BorderRadius.circular(12.5)),
                                         child: Text(
@@ -381,6 +381,10 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                                       width: media.width * 0.25,
                                       height: 160,
                                       decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                            colors: TColor.primaryGradient,
+                                            begin: Alignment.bottomLeft,
+                                            end: Alignment.topRight),
                                         color: TColor.primary,
                                         borderRadius: const BorderRadius.only(
                                             topRight: Radius.circular(35),
@@ -458,7 +462,6 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                                                         title: "Add to Cart",
                                                         icon:
                                                             "assets/img/shopping_add.png",
-                                                        color: TColor.primary,
                                                         onPressed: () {}),
                                                   )
                                                 ],

@@ -18,7 +18,7 @@ class ServiceCall {
   static Future<void> post(
     Map<String, dynamic> parameter,
     String path, {
-    bool isToken = false,
+    bool isToken = true,
     ResSuccess? withSuccess,
     ResFailure? failure,
   }) async {

@@ -65,7 +65,7 @@ class MostPopularCell extends StatelessWidget {
                 Text(
                   mObj["rate"],
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: TColor.primary, fontSize: 12),
+                  style: TextStyle(color: TColor.secondary, fontSize: 12),
                 ),
               ],
             ),

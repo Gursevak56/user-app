@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:food_delivery/view/login/login_view.dart';
 import 'package:food_delivery/view/login/sing_up_view.dart';
+import 'package:food_delivery/view/on_boarding/on_boarding_view.dart';
 
 import '../../common/color_extension.dart';
 import '../../common_widget/round_button.dart';
@@ -24,15 +25,19 @@ class _WelcomeViewState extends State<WelcomeView> {
             Stack(
               alignment: Alignment.bottomCenter,
               children: [
-                Image.asset(
-                  "assets/img/welcome_top_shape.png",
+                Container(
                   width: media.width,
-                ),
-                Image.asset(
-                  "assets/img/app_logo.png",
-                  width: media.width * 0.55,
-                  height: media.width * 0.55,
-                  fit: BoxFit.contain,
+                  decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                          colors: TColor.primaryGradient,
+                          begin: Alignment.topRight,
+                          end: Alignment.bottomLeft)),
+                  child: Image.asset(
+                    "assets/img/app-logo-update.png",
+                    width: media.width * 0.55,
+                    height: media.width * 0.55,
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ],
             ),
@@ -40,7 +45,7 @@ class _WelcomeViewState extends State<WelcomeView> {
               height: media.width * 0.1,
             ),
             Text(
-              "Discover the best foods from over 1,000\nrestaurants and fast delivery to your\ndoorstep",
+              "Explore tasty meals from top restaurants and \n enjoy quick delivery right to you.",
               textAlign: TextAlign.center,
               style: TextStyle(
                   color: TColor.secondaryText,
@@ -49,6 +54,23 @@ class _WelcomeViewState extends State<WelcomeView> {
             ),
             SizedBox(
               height: media.width * 0.1,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 25),
+              child: RoundButton(
+                title: "Explore Now",
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const OnBoardingView(),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(
+              height: 20,
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 25),
@@ -64,16 +86,13 @@ class _WelcomeViewState extends State<WelcomeView> {
                 },
               ),
             ),
-            const SizedBox(
-              height: 20,
-            ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 25),
               child: RoundButton(
                 title: "Create an Account",
                 type: RoundButtonType.textPrimary,
                 onPressed: () {
-                   Navigator.push(
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => const SignUpView(),

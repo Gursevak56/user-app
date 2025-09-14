@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:food_delivery/common/color_extension.dart';
 
-import 'my_order_view.dart';
-
 class AboutUsView extends StatefulWidget {
   const AboutUsView({super.key});
 
@@ -22,60 +20,35 @@ class _AboutUsViewState extends State<AboutUsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: TColor.white,
+      appBar: AppBar(
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Image.asset("assets/img/btn_back.png", width: 20, height: 20),
+        ),
+        title: Text(
+          "About Us",
+          style: TextStyle(
+            color: TColor.primaryText,
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        elevation: 0,
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(
-                height: 46,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      icon: Image.asset("assets/img/btn_back.png",
-                          width: 20, height: 20),
-                    ),
-                    const SizedBox(
-                      width: 8,
-                    ),
-                    Expanded(
-                      child: Text(
-                        "About Us",
-                        style: TextStyle(
-                            color: TColor.primaryText,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800),
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const MyOrderView()));
-                      },
-                      icon: Image.asset(
-                        "assets/img/shopping_cart.png",
-                        width: 25,
-                        height: 25,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
               ListView.builder(
                 physics: const NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
                 padding: EdgeInsets.zero,
                 itemCount: aboutTextArr.length,
-               
                 itemBuilder: ((context, index) {
                   var txt = aboutTextArr[index] as String? ?? "";
                   return Container(
@@ -99,8 +72,7 @@ class _AboutUsViewState extends State<AboutUsView> {
                           child: Text(
                             txt,
                             style: TextStyle(
-                                color: TColor.primaryText,
-                                fontSize: 14),
+                                color: TColor.primaryText, fontSize: 14),
                           ),
                         ),
                       ],

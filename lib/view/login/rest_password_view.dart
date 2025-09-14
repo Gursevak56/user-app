@@ -6,7 +6,6 @@ import 'package:food_delivery/view/login/otp_view.dart';
 import '../../common/globs.dart';
 import '../../common/service_call.dart';
 import '../../common_widget/round_textfield.dart';
-import 'new_password_view.dart';
 
 class ResetPasswordView extends StatefulWidget {
   const ResetPasswordView({super.key});
@@ -20,7 +19,6 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       body: SingleChildScrollView(
         child: Padding(
@@ -38,11 +36,9 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
                     fontSize: 30,
                     fontWeight: FontWeight.w800),
               ),
-
-               const SizedBox(
+              const SizedBox(
                 height: 15,
               ),
-
               Text(
                 "Please enter your email to receive a\n reset code to create a new password via email",
                 textAlign: TextAlign.center,
@@ -62,12 +58,11 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
               const SizedBox(
                 height: 30,
               ),
-             
-              RoundButton(title: "Send", onPressed: () {
-                btnSubmit();
-                
-              }),
-              
+              RoundButton(
+                  title: "Send",
+                  onPressed: () {
+                    btnSubmit();
+                  }),
             ],
           ),
         ),
@@ -84,9 +79,7 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
 
     endEditing();
 
-    serviceCallForgotRequest({
-      "email": txtEmail.text
-    });
+    serviceCallForgotRequest({"email": txtEmail.text});
   }
 
   //TODO: ServiceCall
@@ -98,10 +91,10 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
         withSuccess: (responseObj) async {
       Globs.hideHUD();
       if (responseObj[KKey.status] == "1") {
-        
-        Navigator.push(context, MaterialPageRoute(builder: (context) => OTPView(email: txtEmail.text) ) );
-
-        
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => OTPView(email: txtEmail.text)));
       } else {
         mdShowAlert(Globs.appName,
             responseObj[KKey.message] as String? ?? MSG.fail, () {});

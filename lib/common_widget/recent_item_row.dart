@@ -12,6 +12,7 @@ class RecentItemRow extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: InkWell(
+        borderRadius: BorderRadius.circular(10),
         onTap: onTap,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,7 +81,7 @@ class RecentItemRow extends StatelessWidget {
                       Text(
                         rObj["rate"],
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: TColor.primary, fontSize: 11),
+                        style: TextStyle(color: TColor.secondary, fontSize: 11),
                       ),
                       const SizedBox(width: 8),
                       Text(

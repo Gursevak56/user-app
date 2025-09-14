@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:food_delivery/main.dart';
-import '../lib/view/home/home_view.dart';
+import 'package:food_delivery/view/home/home_view.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app with a real home page and trigger a frame.
     await tester.pumpWidget(
-      MyApp(
+      const MyApp(
         defaultHome: HomeView(),
       ),
     );

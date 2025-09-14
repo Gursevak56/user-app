@@ -25,8 +25,8 @@ class TabButton extends StatelessWidget {
         children: [
           Image.asset(
             icon,
-            width: 15,
-            height: 15,
+            width: 18,
+            height: 18,
             color: isSelected ? TColor.primary : TColor.placeholder,
           ),
           const SizedBox(height: 4),

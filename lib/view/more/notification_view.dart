@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:food_delivery/common/color_extension.dart';
 
-import 'my_order_view.dart';
-
 class NotificationsView extends StatefulWidget {
   const NotificationsView({super.key});
 
@@ -12,106 +10,74 @@ class NotificationsView extends StatefulWidget {
 
 class _NotificationsViewState extends State<NotificationsView> {
   List notificationArr = [
+    {"title": "Your order has been delivered", "time": "Now"},
+    {"title": "Your orders has been picked up", "time": "5 mins ago"},
+    {"title": "Your order has been delivered", "time": "1 h 55 mins ago"},
+    {"title": "Your orders has been picked up", "time": "2 h ago"},
+    {"title": "Your order has been delivered", "time": "6 h 44 mins ago"},
+    {"title": "Your orders has been picked up", "time": "7 h ago"},
+    {"title": "Your order has been delivered", "time": "07 Sep 2025, 11:05 AM"},
     {
       "title": "Your orders has been picked up",
-      "time": "Now",
+      "time": "07 Sep 2025, 10:45 AM"
     },
-    {
-      "title": "Your order has been delivered",
-      "time": "1 h ago",
-    },
-    {
-      "title": "Your orders has been picked up",
-      "time": "3 h ago",
-    },
-    {
-      "title": "Your order has been delivered",
-      "time": "5 h ago",
-    },
+    {"title": "Your order has been delivered", "time": "06 Sep 2025, 4:20 PM"},
+    {"title": "Your orders has been picked up", "time": "06 Sep 2025, 4:00 PM"},
+    {"title": "Your order has been delivered", "time": "06 Sep 2025, 11:31 AM"},
     {
       "title": "Your orders has been picked up",
-      "time": "05 Jun 2023",
+      "time": "06 Sep 2025, 11:15 AM"
     },
-    {
-      "title": "Your order has been delivered",
-      "time": "05 Jun 2023",
-    },
-    {
-      "title": "Your orders has been picked up",
-      "time": "06 Jun 2023",
-    },
-    {
-      "title": "Your order has been delivered",
-      "time": "06 Jun 2023",
-    },
+    {"title": "Your order has been delivered", "time": "05 Sep 2025, 2:41 PM"},
+    {"title": "Your orders has been picked up", "time": "05 Sep 2025, 2:25 PM"},
+    {"title": "Your order has been delivered", "time": "03 Sep 2025, 6:06 PM"},
+    {"title": "Your orders has been picked up", "time": "03 Sep 2025, 5:50 PM"}
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: TColor.white,
+      appBar: AppBar(
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Image.asset("assets/img/btn_back.png", width: 20, height: 20),
+        ),
+        title: Text(
+          "Notifications",
+          style: TextStyle(
+            color: TColor.primaryText,
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        elevation: 0,
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(
-                height: 46,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      icon: Image.asset("assets/img/btn_back.png",
-                          width: 20, height: 20),
-                    ),
-                    const SizedBox(
-                      width: 8,
-                    ),
-                    Expanded(
-                      child: Text(
-                        "Notifications",
-                        style: TextStyle(
-                            color: TColor.primaryText,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800),
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const MyOrderView()));
-                      },
-                      icon: Image.asset(
-                        "assets/img/shopping_cart.png",
-                        width: 25,
-                        height: 25,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
               ListView.separated(
                 physics: const NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
                 padding: EdgeInsets.zero,
                 itemCount: notificationArr.length,
                 separatorBuilder: ((context, index) => Divider(
-                  indent: 25,
-                  endIndent: 25,
+                      indent: 25,
+                      endIndent: 25,
                       color: TColor.secondaryText.withOpacity(0.4),
                       height: 1,
                     )),
                 itemBuilder: ((context, index) {
                   var cObj = notificationArr[index] as Map? ?? {};
                   return Container(
-                    decoration: BoxDecoration(color: index % 2 == 0 ? TColor.white : TColor.textfield ),
+                    decoration: BoxDecoration(
+                        color:
+                            index % 2 == 0 ? TColor.white : TColor.textfield),
                     padding: const EdgeInsets.symmetric(
                         vertical: 15, horizontal: 25),
                     child: Row(

@@ -11,7 +11,7 @@ import 'package:food_delivery/view/login/login_view.dart';
 import 'package:food_delivery/view/on_boarding/on_boarding_view.dart';
 
 class SignUpView extends StatefulWidget {
-  const SignUpView({Key? key}) : super(key: key);
+  const SignUpView({super.key});
 
   @override
   State<SignUpView> createState() => _SignUpViewState();

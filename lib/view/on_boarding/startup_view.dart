@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:food_delivery/view/login/welcome_view.dart';
+import 'package:food_delivery/common/color_extension.dart';
 import 'package:food_delivery/view/main_tabview/main_tabview.dart';
+import 'package:food_delivery/view/on_boarding/on_boarding_view.dart';
 
 import '../../common/globs.dart';
 
@@ -19,18 +20,17 @@ class _StarupViewState extends State<StartupView> {
   }
 
   void goWelcomePage() async {
-
-      await Future.delayed( const Duration(seconds: 3) );
-      welcomePage();
+    await Future.delayed(const Duration(seconds: 3));
+    welcomePage();
   }
-  void welcomePage(){
 
+  void welcomePage() {
     if (Globs.udValueBool(Globs.userLogin)) {
-       Navigator.push(context,
+      Navigator.push(context,
           MaterialPageRoute(builder: (context) => const MainTabView()));
-    }else{
-       Navigator.push(
-        context, MaterialPageRoute(builder: (context) => const WelcomeView()));
+    } else {
+      Navigator.push(context,
+          MaterialPageRoute(builder: (context) => const OnBoardingView()));
     }
   }
 
@@ -48,11 +48,18 @@ class _StarupViewState extends State<StartupView> {
             height: media.height,
             fit: BoxFit.cover,
           ),
-          Image.asset(
-            "assets/img/app_logo.png",
-             width: media.width * 0.55,
-            height: media.width * 0.55,
-            fit: BoxFit.contain,
+          Container(
+            decoration: BoxDecoration(
+                gradient: LinearGradient(
+                    colors: TColor.primaryGradient,
+                    begin: Alignment.topRight,
+                    end: Alignment.bottomLeft)),
+            child: Image.asset(
+              "assets/img/app-logo-update.png",
+              width: media.width * 0.55,
+              height: media.width * 0.55,
+              fit: BoxFit.contain,
+            ),
           ),
         ],
       ),

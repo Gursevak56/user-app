@@ -25,15 +25,25 @@ class RoundButton extends StatelessWidget {
     return InkWell(
       onTap: onPressed,
       child: Container(
-        height: 56,
+        height: 55,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           border: type == RoundButtonType.bgPrimary
               ? null
               : Border.all(color: TColor.primary, width: 1),
-          color:
-              type == RoundButtonType.bgPrimary ? TColor.primary : TColor.white,
-          borderRadius: BorderRadius.circular(28),
+          gradient: LinearGradient(
+            colors: type == RoundButtonType.bgPrimary
+                ? TColor.primaryGradient
+                : TColor.whiteGradient,
+          ),
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+                BoxShadow(
+                  color: TColor.primary.withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+          ]
         ),
         child: Text(
           title,

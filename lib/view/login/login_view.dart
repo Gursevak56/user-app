@@ -110,7 +110,7 @@ class _LoginViewState extends State<LoginView> {
               RoundIconButton(
                 icon: "assets/img/facebook_logo.png",
                 title: "Login with Facebook",
-                color: const Color(0xff367FC0),
+               
                 onPressed: () {},
               ),
               const SizedBox(
@@ -119,7 +119,7 @@ class _LoginViewState extends State<LoginView> {
               RoundIconButton(
                 icon: "assets/img/google_logo.png",
                 title: "Login with Google",
-                color: const Color(0xffDD4B39),
+                
                 onPressed: () {},
               ),
               const SizedBox(

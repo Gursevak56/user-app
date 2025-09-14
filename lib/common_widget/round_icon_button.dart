@@ -6,14 +6,12 @@ class RoundIconButton extends StatelessWidget {
   final VoidCallback onPressed;
   final String title;
   final String icon;
-  final Color color;
   final double fontSize;
   final FontWeight fontWeight;
   const RoundIconButton({
     super.key,
     required this.title,
     required this.icon,
-    required this.color,
     this.fontSize = 12,
     this.fontWeight = FontWeight.w500,
     required this.onPressed,
@@ -27,7 +25,7 @@ class RoundIconButton extends StatelessWidget {
         height: 56,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: color,
+          gradient: LinearGradient(colors: TColor.primaryGradient),
           borderRadius: BorderRadius.circular(28),
         ),
         child: Row(

@@ -25,7 +25,7 @@ class ViewAllTitleRow extends StatelessWidget {
           child: Text(
             "View all",
             style: TextStyle(
-              color: TColor.primary,
+              color: TColor.secondary,
               fontSize: 13,
               fontWeight: FontWeight.w500,
             ),
