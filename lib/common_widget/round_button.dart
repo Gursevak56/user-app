@@ -9,15 +9,21 @@ class RoundButton extends StatelessWidget {
   final String title;
   final RoundButtonType type;
   final double fontSize;
+  final double height;
+  final double width;
+  final BorderRadiusGeometry borderRadius;
+  final Gradient gradient;
 
-  final dynamic onTap;
   const RoundButton({
     super.key,
     required this.title,
     required this.onPressed,
     this.fontSize = 16,
+    this.height = 55,
+    this.width = double.infinity,
     this.type = RoundButtonType.bgPrimary,
-    this.onTap,
+    this.borderRadius = const BorderRadius.all(Radius.circular(30)),
+    this.gradient = TColor.foodTabGradient,
   });
 
   @override
@@ -25,26 +31,25 @@ class RoundButton extends StatelessWidget {
     return InkWell(
       onTap: onPressed,
       child: Container(
-        height: 55,
+        height: height,
+        width: width,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          border: type == RoundButtonType.bgPrimary
-              ? null
-              : Border.all(color: TColor.primary, width: 1),
-          gradient: LinearGradient(
-            colors: type == RoundButtonType.bgPrimary
-                ? TColor.primaryGradient
+            border: type == RoundButtonType.bgPrimary
+                ? null
+                : Border.all(color: TColor.primary, width: 1),
+            gradient: type == RoundButtonType.bgPrimary
+                ? gradient
                 : TColor.whiteGradient,
-          ),
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-                BoxShadow(
-                  color: TColor.primary.withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-          ]
-        ),
+            borderRadius: borderRadius,
+            // boxShadow: [
+            //   BoxShadow(
+            //     color: TColor.primary.withOpacity(0.3),
+            //     blurRadius: 8,
+            //     offset: const Offset(0, 4),
+            //   ),
+            // ].
+            ),
         child: Text(
           title,
           style: TextStyle(

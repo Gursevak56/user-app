@@ -89,6 +89,8 @@ class _MenuItemsViewState extends State<MenuItemsView> {
     return Scaffold(
       backgroundColor: TColor.white,
       appBar: AppBar(
+        backgroundColor: TColor.white,
+        scrolledUnderElevation: 0,
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context);

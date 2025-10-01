@@ -311,6 +311,9 @@ class _ActiveOrdersViewState extends State<ActiveOrdersView> {
     return Scaffold(
       backgroundColor: TColor.white,
       appBar: AppBar(
+        backgroundColor: TColor.white,
+        scrolledUnderElevation: 0,
+        elevation: 0,
         leading: IconButton(
           onPressed: () {
             Navigator.pushAndRemoveUntil(
@@ -350,7 +353,6 @@ class _ActiveOrdersViewState extends State<ActiveOrdersView> {
             ),
           ),
         ],
-        elevation: 0,
       ),
       body: Column(
         children: [

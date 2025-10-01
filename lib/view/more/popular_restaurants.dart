@@ -83,6 +83,7 @@ class PopularReestaurants extends StatelessWidget {
       backgroundColor: TColor.white,
       appBar: AppBar(
         backgroundColor: TColor.white,
+        scrolledUnderElevation: 0,
         elevation: 0,
         title: Text(
           "Popular Restaurants",

@@ -43,8 +43,8 @@ class RoundTextfield extends StatelessWidget {
                 focusedBorder: InputBorder.none,
                 hintText: hintText,
                 hintStyle: TextStyle(
-                  color: TColor.placeholder,
-                  fontSize: 14,
+                  color: TColor.secondaryText,
+                  fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
               ),

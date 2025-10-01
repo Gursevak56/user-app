@@ -130,7 +130,7 @@ class _FoodShareOptionsViewState extends State<FoodShareOptionsView> {
               },
               icon: const Icon(Icons.public, color: Colors.white, size: 22),
               label: const Text(
-                "Wait for Random Joins",
+                "Random Joins",
                 style: TextStyle(color: Colors.white, fontSize: 18),
               ),
             ),

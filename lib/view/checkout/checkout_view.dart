@@ -27,6 +27,9 @@ class _CheckoutViewState extends State<CheckoutView> {
     return Scaffold(
       backgroundColor: TColor.white,
       appBar: AppBar(
+        backgroundColor: TColor.white,
+        scrolledUnderElevation: 0,
+        elevation: 0,
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context);
@@ -41,7 +44,6 @@ class _CheckoutViewState extends State<CheckoutView> {
             fontWeight: FontWeight.w800,
           ),
         ),
-        elevation: 0,
       ),
       body: SingleChildScrollView(
         child: Column(

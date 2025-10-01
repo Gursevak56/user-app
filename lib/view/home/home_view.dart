@@ -1,15 +1,10 @@
+import 'package:animated_segmented_tab_control/animated_segmented_tab_control.dart';
 import 'package:flutter/material.dart';
 import 'package:food_delivery/common/color_extension.dart';
 import 'package:food_delivery/common_widget/round_textfield.dart';
-import 'package:food_delivery/view/more/popular_restaurants.dart';
-
-import '../../common/globs.dart';
-import '../../common/service_call.dart';
-import '../../common_widget/category_cell.dart';
-import '../../common_widget/most_popular_cell.dart';
-import '../../common_widget/popular_resutaurant_row.dart';
-import '../../common_widget/recent_item_row.dart';
-import '../../common_widget/view_all_title_row.dart';
+import 'package:food_delivery/common_widget/start_order_button.dart';
+import 'package:food_delivery/view/home/home_food_tab_view.dart';
+import 'package:food_delivery/view/home/home_grocery_tab_view.dart';
 import '../more/my_order_view.dart';
 
 class HomeView extends StatefulWidget {
@@ -19,273 +14,187 @@ class HomeView extends StatefulWidget {
   State<HomeView> createState() => _HomeViewState();
 }
 
-class _HomeViewState extends State<HomeView> {
+class _HomeViewState extends State<HomeView>
+    with SingleTickerProviderStateMixin {
   TextEditingController txtSearch = TextEditingController();
+  late TabController _tabController;
 
-  List catArr = [
-    {"image": "assets/img/cat_offer.png", "name": "Offers"},
-    {"image": "assets/img/cat_sri.png", "name": "Sri Lankan"},
-    {"image": "assets/img/cat_3.png", "name": "Italian"},
-    {"image": "assets/img/cat_4.png", "name": "Indian"},
-  ];
+  List<Widget> get tabOptionView => [
+        SingleChildScrollView(child: HomeFoodTabView()),
+        SingleChildScrollView(child: HomeGroceryTabView())
+      ];
 
-  List popArr = [
-    {
-      "name": "Minute by tuk tuk",
-      "image": "assets/img/res_1.png",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Asian Fusion",
-      "food_type": "Café"
-    },
-    {
-      "name": "Café de Noir",
-      "image": "assets/img/res_2.png",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "French",
-      "food_type": "Café"
-    },
-    {
-      "name": "Bakes by Tella",
-      "image": "assets/img/res_3.png",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Bakery",
-      "food_type": "Pastries"
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      setState(() {}); // rebuild when tab changes
+    });
+  }
 
-  List mostPopArr = [
-    {
-      "image": "assets/img/m_res_1.png",
-      "name": "Minute by tuk tuk",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Cafe",
-      "food_type": "Western Food"
-    },
-    {
-      "image": "assets/img/m_res_2.png",
-      "name": "Café de Noir",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Cafe",
-      "food_type": "Western Food"
-    },
-  ];
-
-  List recentArr = [
-    {
-      "image": "assets/img/item_1.png",
-      "name": "Mulberry Pizza by Josh",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Cafe",
-      "food_type": "Western Food"
-    },
-    {
-      "image": "assets/img/item_2.png",
-      "name": "Barita",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Cafe",
-      "food_type": "Western Food"
-    },
-    {
-      "image": "assets/img/item_3.png",
-      "name": "Pizza Rush Hour",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Cafe",
-      "food_type": "Western Food"
-    },
-  ];
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    // decide gradient + hint based on tab
+    final isFoodTab = _tabController.index == 0;
+
     return Scaffold(
       backgroundColor: TColor.white,
       appBar: AppBar(
+        backgroundColor: TColor.white,
+        scrolledUnderElevation: 0,
         elevation: 0,
-        title: Text(
-          "Good morning ${ServiceCall.userPayload[KKey.name] ?? ""}!",
-          style: TextStyle(
-            color: TColor.primaryText,
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
-          ),
+        automaticallyImplyLeading: false,
+        title: const Row(
+          children: [
+            Icon(Icons.location_on_sharp),
+            Text(
+              "Roorkee, UP",
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 20.0),
-            child: IconButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const MyOrderView()),
-                );
-              },
-              icon: Image.asset(
-                "assets/img/shopping_cart.png",
-                width: 25,
-                height: 25,
-                color: TColor.primary,
-              ),
-            ),
-          ),
-        ],
-        automaticallyImplyLeading: false,
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            padding: const EdgeInsets.only(right: 16.0),
+            child: Row(
               children: [
-                Text(
-                  "Delivering to",
-                  style: TextStyle(
-                    color: TColor.secondaryText,
-                    fontSize: 11,
+                IconButton(
+                  onPressed: () {},
+                  icon: Icon(
+                    Icons.notifications,
+                    color: TColor.primaryText,
+                    size: 24,
                   ),
                 ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Text(
-                      "Current Location",
-                      style: TextStyle(
-                        color: TColor.secondaryText,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(width: 25),
-                    Image.asset(
-                      "assets/img/dropdown.png",
-                      width: 12,
-                      height: 12,
-                      color: TColor.secondary,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                RoundTextfield(
-                  hintText: "Search Food",
-                  controller: txtSearch,
-                  left: Container(
-                    alignment: Alignment.center,
-                    width: 30,
-                    child: Image.asset(
-                      "assets/img/search.png",
-                      width: 20,
-                      height: 20,
-                    ),
+                const SizedBox(
+                  height: 34,
+                  child: CircleAvatar(
+                    backgroundImage: AssetImage("assets/img/profile.png"),
                   ),
-                ),
+                )
               ],
             ),
           ),
-
-          // ✅ Scrollable Section
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    height: 120,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      itemCount: catArr.length,
-                      itemBuilder: ((context, index) {
-                        var cObj = catArr[index] as Map? ?? {};
-                        return CategoryCell(
-                          cObj: cObj,
-                          onTap: () {},
-                        );
-                      }),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: ViewAllTitleRow(
-                      title: "Popular Restaurants",
-                      onView: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    const PopularReestaurants()));
-                      },
-                    ),
-                  ),
-                  ListView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    itemCount: popArr.length,
-                    itemBuilder: ((context, index) {
-                      var pObj = popArr[index] as Map? ?? {};
-                      return PopularRestaurantRow(
-                        pObj: pObj,
-                        onTap: () {},
-                      );
-                    }),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: ViewAllTitleRow(
-                      title: "Most Popular",
-                      onView: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const MyOrderView(),
+        ],
+      ),
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: Row(
+                  children: [
+                    Container(
+                        height: 50,
+                        width: 50,
+                        decoration: BoxDecoration(
+                          color: TColor.textfield,
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                        child: IconButton(
+                            onPressed: () {},
+                            icon: Image.asset(
+                              "assets/img/tab_home.png",
+                              color: const Color(0xFF1F2937),
+                              height: 20,
+                              width: 20,
+                            ))),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: SegmentedTabControl(
+                        controller: _tabController,
+                        barDecoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50),
+                          color: TColor.textfield,
+                        ),
+                        textStyle: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 18),
+                        height: 50,
+                        tabTextColor: TColor.secondaryText,
+                        selectedTabTextColor: Colors.white,
+                        squeezeIntensity: 2,
+                        indicatorPadding: const EdgeInsets.all(4),
+                        indicatorDecoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                        tabs: const [
+                          SegmentTab(
+                            label: 'Food',
+                            gradient: TColor.foodTabGradient,
                           ),
-                        );
-                      },
+                          SegmentTab(
+                            label: 'Grocery',
+                            gradient: TColor.groceryTabGradient,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  SizedBox(
-                    height: 200,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      itemCount: mostPopArr.length,
-                      itemBuilder: ((context, index) {
-                        var mObj = mostPopArr[index] as Map? ?? {};
-                        return MostPopularCell(
-                          mObj: mObj,
-                          onTap: () {},
-                        );
-                      }),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    RoundTextfield(
+                      hintText: isFoodTab
+                          ? "Search for dishes or restaurants"
+                          : "Search for products",
+                      controller: txtSearch,
                     ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  physics: const BouncingScrollPhysics(),
+                  children: tabOptionView,
+                ),
+              ),
+            ],
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Container(
+                width: 190,
+                height: 50,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const MyOrderView(),
+                      ),
+                    );
+                  },
+                  child: StartOrderButton(
+                    onPressed: () {},
+                    gradient: isFoodTab
+                        ? TColor.foodTabGradient
+                        : TColor.groceryTabGradient,
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: ViewAllTitleRow(
-                      title: "Recent Items",
-                      onView: () {},
-                    ),
-                  ),
-                  ListView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
-                    itemCount: recentArr.length,
-                    itemBuilder: ((context, index) {
-                      var rObj = recentArr[index] as Map? ?? {};
-                      return RecentItemRow(
-                        rObj: rObj,
-                        onTap: () {},
-                      );
-                    }),
-                  )
-                ],
+                ),
               ),
             ),
           ),
@@ -294,3 +203,4 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 }
+

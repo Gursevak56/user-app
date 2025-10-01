@@ -22,6 +22,9 @@ class _AboutUsViewState extends State<AboutUsView> {
     return Scaffold(
       backgroundColor: TColor.white,
       appBar: AppBar(
+        backgroundColor: TColor.white,
+        scrolledUnderElevation: 0,
+        elevation: 0,
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context);
@@ -36,7 +39,6 @@ class _AboutUsViewState extends State<AboutUsView> {
             fontWeight: FontWeight.w800,
           ),
         ),
-        elevation: 0,
       ),
       body: SingleChildScrollView(
         child: Padding(

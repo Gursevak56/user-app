@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:food_delivery/common/color_extension.dart';
 
-class OfferView extends StatefulWidget {
-  const OfferView({super.key});
+class ONPLView extends StatefulWidget {
+  const ONPLView({super.key});
 
   @override
-  State<OfferView> createState() => _OfferViewState();
+  State<ONPLView> createState() => _ONPLViewState();
 }
 
-class _OfferViewState extends State<OfferView>
+class _ONPLViewState extends State<ONPLView>
     with SingleTickerProviderStateMixin {
   double total = 3000;
   double spent = 1250;
@@ -152,7 +152,7 @@ class _OfferViewState extends State<OfferView>
                       children: [
                         _buildStatBox(
                           icon: Icons.room_service,
-                          title: "Total Spending",
+                          title: "Total Spend",
                           value: "₹$total",
                         ),
                         _buildStatBox(

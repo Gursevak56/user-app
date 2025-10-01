@@ -61,6 +61,9 @@ class _MoreViewState extends State<MoreView> {
     return Scaffold(
       backgroundColor: TColor.white,
       appBar: AppBar(
+        backgroundColor: TColor.white,
+        scrolledUnderElevation: 0,
+        elevation: 0,
         automaticallyImplyLeading: false,
         title: Text(
           "More",

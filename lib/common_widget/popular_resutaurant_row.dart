@@ -29,10 +29,11 @@ class PopularRestaurantRow extends StatelessWidget {
                 fit: BoxFit.cover,
               ),
             ),
-            const SizedBox(width: 8),
-            const SizedBox(height: 12),
+            const SizedBox(
+              height: 12,
+            ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -45,21 +46,25 @@ class PopularRestaurantRow extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Image.asset(
                         "assets/img/rate.png",
-                        width: 10,
-                        height: 10,
+                        width: 16,
+                        height: 16,
                         fit: BoxFit.cover,
+                        color: TColor.secondary,
                       ),
                       const SizedBox(width: 4),
                       Text(
                         pObj["rate"],
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: TColor.secondary, fontSize: 11),
+                        style: TextStyle(
+                          color: TColor.primaryText,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       const SizedBox(width: 8),
                       Text(

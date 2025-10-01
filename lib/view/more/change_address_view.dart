@@ -61,6 +61,8 @@ class _ChangeAddressViewState extends State<ChangeAddressView> {
       backgroundColor: TColor.white,
       appBar: AppBar(
         backgroundColor: TColor.white,
+        scrolledUnderElevation: 0,
+        elevation: 0,
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context);

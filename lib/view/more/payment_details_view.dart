@@ -26,6 +26,9 @@ class _PaymentDetailsViewState extends State<PaymentDetailsView> {
     return Scaffold(
       backgroundColor: TColor.white,
       appBar: AppBar(
+        backgroundColor: TColor.white,
+        scrolledUnderElevation: 0,
+        elevation: 0,
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context);
@@ -59,7 +62,6 @@ class _PaymentDetailsViewState extends State<PaymentDetailsView> {
             ),
           ),
         ],
-        elevation: 0,
       ),
       body: SingleChildScrollView(
         child: Padding(

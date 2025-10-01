@@ -43,7 +43,10 @@ class _MenuViewState extends State<MenuView> {
     return Scaffold(
       backgroundColor: TColor.white,
       appBar: AppBar(
+        backgroundColor: TColor.white,
+        scrolledUnderElevation: 0,
         elevation: 0,
+        automaticallyImplyLeading: false,
         title: Text(
           "Menu",
           style: TextStyle(
@@ -71,7 +74,6 @@ class _MenuViewState extends State<MenuView> {
             ),
           ),
         ],
-        automaticallyImplyLeading: false,
       ),
       body: Column(
         children: [

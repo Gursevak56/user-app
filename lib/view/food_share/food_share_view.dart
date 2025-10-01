@@ -47,6 +47,10 @@ class FoodShareView extends StatelessWidget {
     return Scaffold(
       backgroundColor: TColor.white,
       appBar: AppBar(
+        backgroundColor: TColor.white,
+        scrolledUnderElevation: 0,
+        elevation: 0,
+        automaticallyImplyLeading: false,
         title: Text(
           "Food Share",
           style: TextStyle(
@@ -74,8 +78,6 @@ class FoodShareView extends StatelessWidget {
             ),
           ),
         ],
-        elevation: 0,
-        automaticallyImplyLeading: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
