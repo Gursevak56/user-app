@@ -16,6 +16,7 @@ class FoodRecentOrdersCell extends StatelessWidget {
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
@@ -32,46 +33,40 @@ class FoodRecentOrdersCell extends StatelessWidget {
                 spreadRadius: -1)
           ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.asset(
-                  fRObj["image"].toString(),
-                  width: 64,
-                  height: 64,
-                ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.asset(
+                fRObj["image"].toString(),
+                width: 64,
+                height: 64,
               ),
-              const SizedBox(width: 12),
-              SizedBox(
-                height: 40,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      fRObj["name"],
-                      style: GoogleFonts.poppins(
-                        color: Colors.black,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Text(
-                      "Delivered • ${fRObj["delivered_date"]}",
-                      style: GoogleFonts.poppins(
-                        color: TColor.primaryText,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ],
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  fRObj["name"],
+                  style: GoogleFonts.poppins(
+                    color: Colors.black,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-            ],
-          ),
+                Text(
+                  "Delivered • ${fRObj["delivered_date"]}",
+                  style: GoogleFonts.poppins(
+                    color: TColor.primaryText,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:food_delivery/common/color_extension.dart';
 import 'package:food_delivery/common_widget/food_recent_orders_cell.dart';
-import 'package:food_delivery/common_widget/most_popular_cell.dart';
-import 'package:food_delivery/common_widget/recent_item_row.dart';
+import 'package:food_delivery/common_widget/food_tab_cat_cell.dart';
+import 'package:food_delivery/common_widget/restaurants.dart';
 import 'package:food_delivery/common_widget/round_button.dart';
 import 'package:food_delivery/common_widget/title_rows.dart';
 import 'package:food_delivery/view/more/my_order_view.dart';
@@ -15,7 +15,7 @@ class HomeFoodTabView extends StatelessWidget {
   });
 
   final List foodRecentOrderArr = [
-     {
+    {
       "image": "assets/img/paneer_butter.png",
       "name": "Paneer Butter",
       "delivered_date": "3 days ago",
@@ -68,20 +68,24 @@ class HomeFoodTabView extends StatelessWidget {
 
   final List foodMostPopArr = [
     {
-      "image": "assets/img/m_res_1.png",
-      "name": "Minute by tuk tuk",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Cafe",
-      "food_type": "Western Food"
+      "title": "Indian",
+      "time": "30-40 mins",
+      "image": "assets/img/indian_food.png",
     },
     {
-      "image": "assets/img/m_res_2.png",
-      "name": "Café de Noir",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Cafe",
-      "food_type": "Western Food"
+      "title": "Chinese",
+      "time": "30-40 mins",
+      "image": "assets/img/chinese_food.png",
+    },
+    {
+      "title": "South Indian",
+      "time": "30-40 mins",
+      "image": "assets/img/south_indian_food.png",
+    },
+    {
+      "title": "Fast Food",
+      "time": "30-40 mins",
+      "image": "assets/img/fast_food.png",
     },
   ];
 
@@ -109,6 +113,25 @@ class HomeFoodTabView extends StatelessWidget {
       "rating": "124",
       "type": "Cafe",
       "food_type": "Western Food"
+    },
+  ];
+
+  final List restaurants = [
+    {
+      "image": "assets/img/biryani_junction.png",
+      "name": "Biryani Junction",
+      "foodType": "Hyderabadi",
+      "foodCat": "Indian",
+      "rate": "4.3",
+      "time": "30-40 mins"
+    },
+    {
+      "image": "assets/img/pizza_hub.png",
+      "name": "Pizza Hub",
+      "foodType": "Italia",
+      "foodCat": "Fast Food",
+      "rate": "4.1",
+      "time": "25-35 mins"
     },
   ];
 
@@ -194,7 +217,7 @@ class HomeFoodTabView extends StatelessWidget {
           height: 12,
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: ViewAllTitleRow(
             title: "Recent Orders",
             onView: () {
@@ -206,7 +229,7 @@ class HomeFoodTabView extends StatelessWidget {
           ),
         ),
         SizedBox(
-          height: 140,
+          height: 88,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -220,10 +243,16 @@ class HomeFoodTabView extends StatelessWidget {
             }),
           ),
         ),
+        const SizedBox(
+          height: 12,
+        ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
+          ),
           child: ViewAllTitleRow(
-            title: "Most Popular",
+            title: "Categories",
             onView: () {
               Navigator.push(
                 context,
@@ -235,39 +264,53 @@ class HomeFoodTabView extends StatelessWidget {
           ),
         ),
         SizedBox(
-          height: 200,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
+          height: 240,
+          child: GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              mainAxisExtent: 110,
+            ),
+            physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: foodMostPopArr.length,
             itemBuilder: ((context, index) {
               var mObj = foodMostPopArr[index] as Map? ?? {};
-              return MostPopularCell(
+              return FoodTabCatCell(
                 mObj: mObj,
                 onTap: () {},
               );
             }),
           ),
         ),
+        const SizedBox(
+          height: 12,
+        ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: ViewAllTitleRow(
-            title: "Recent Items",
+            title: "Restaurants",
             onView: () {},
           ),
         ),
+        const SizedBox(
+          height: 12,
+        ),
         ListView.builder(
-          physics: const NeverScrollableScrollPhysics(),
+          physics: const BouncingScrollPhysics(),
           shrinkWrap: true,
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: foodRecentArr.length,
+          itemCount: restaurants.length,
           itemBuilder: ((context, index) {
-            var rObj = foodRecentArr[index] as Map? ?? {};
-            return RecentItemRow(
+            var rObj = restaurants[index] as Map? ?? {};
+            return Restaurants(
               rObj: rObj,
-              onTap: () {},
             );
           }),
+        ),
+        const SizedBox(
+          height: 50,
         )
       ],
     );

@@ -42,13 +42,7 @@ class RoundButton extends StatelessWidget {
                 ? gradient
                 : TColor.whiteGradient,
             borderRadius: borderRadius,
-            // boxShadow: [
-            //   BoxShadow(
-            //     color: TColor.primary.withOpacity(0.3),
-            //     blurRadius: 8,
-            //     offset: const Offset(0, 4),
-            //   ),
-            // ].
+            
             ),
         child: Text(
           title,

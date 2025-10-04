@@ -17,7 +17,7 @@ class ViewAllTitleRow extends StatelessWidget {
           style: TextStyle(
             color: TColor.primaryText,
             fontSize: 20,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
           ),
         ),
         TextButton(
