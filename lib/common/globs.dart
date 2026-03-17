@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
@@ -9,6 +10,9 @@ class Globs {
   static const appName = "Food Delivery";
   static const userPayload = "user_payload";
   static const userLogin = "user_login";
+  static const userLat = "user_lat";
+  static const userLng = "user_lng";
+  static const userProfile = "user_profile"; // to store cached profile
 
   static void showHUD({String status = "loading ....."}) async {
     await Future.delayed(const Duration(milliseconds: 1));
@@ -79,18 +83,60 @@ class Globs {
   static getToken() {
     return Globs.udValueString(Globs.userPayload);
   }
+
+  /// Extracts userId from the stored JWT token's 'sub' claim.
+  /// Falls back to stored 'user_id' pref if JWT decode fails.
+  static String getUserId() {
+    // First try stored user_id
+    final storedId = udValueString('user_id');
+    if (storedId.isNotEmpty) return storedId;
+
+    // Fallback: decode JWT
+    try {
+      final token = getToken() as String? ?? '';
+      if (token.isEmpty) return '';
+      final parts = token.split('.');
+      if (parts.length != 3) return '';
+      String payload = parts[1];
+      // Normalize base64
+      switch (payload.length % 4) {
+        case 2: payload += '=='; break;
+        case 3: payload += '='; break;
+      }
+      final decoded = utf8.decode(base64Url.decode(payload));
+      final Map<String, dynamic> claims = json.decode(decoded);
+      return claims['sub']?.toString() ?? '';
+    } catch (e) {
+      if (kDebugMode) print('getUserId JWT decode error: $e');
+      return '';
+    }
+  }
 }
 
 class SVKey {
-  static const mainUrl = "http://172.20.10.2:8085";
-  static const baseUrl = '$mainUrl/users/';
+  static const mainUrl = "https://user-prod.mangaale.com";
+  static const restaurantBaseUrl = "https://restaurant-prod.mangaale.com";
+  static const cartBaseUrl = "https://qrunch-api-prod.mangaale.com/api";
+  static const baseUrl = '$mainUrl/users';
   static const nodeUrl = mainUrl;
 
-  static const svLogin = '${baseUrl}login';
-  static const svSignUp = '${baseUrl}sign_up';
-  static const svForgotPasswordRequest = '${baseUrl}forgot_password_request';
-  static const svForgotPasswordVerify = '${baseUrl}forgot_password_verify';
-  static const svForgotPasswordSetNew = '${baseUrl}forgot_password_set_new';
+  static const svLogin = '$baseUrl/login';
+  static const svSignUp = baseUrl; // the sign up endpoint is exactly /users
+  static const svForgotPasswordRequest = '$baseUrl/forgot_password_request';
+  static const svForgotPasswordVerify = '$baseUrl/forgot_password_verify';
+  static const svForgotPasswordSetNew = '$baseUrl/forgot_password_set_new';
+  
+  static const svProfile = '$baseUrl/profile';
+  static const svAddresses = '$baseUrl/addresses';
+
+  // Cart endpoints
+  static String cartUrl(String userId) => '$cartBaseUrl/cart/$userId';
+  static String cartItemUrl(String userId, int dishId) =>
+      '$cartBaseUrl/cart/$userId/$dishId';
+  static const cartAddUrl = '$cartBaseUrl/cart';
+
+  // Order endpoint
+  static const onlineOrderUrl = '$restaurantBaseUrl/api/orders/online';
 }
 
 class KKey {

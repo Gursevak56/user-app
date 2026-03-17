@@ -5,10 +5,12 @@ import 'package:food_delivery/common/color_extension.dart';
 import 'package:food_delivery/common/extension.dart';
 import 'package:food_delivery/common/globs.dart';
 import 'package:food_delivery/common/service_call.dart';
+import 'package:food_delivery/common/location_service.dart';
 import 'package:food_delivery/common_widget/round_button.dart';
 import 'package:food_delivery/common_widget/round_textfield.dart';
 import 'package:food_delivery/view/login/login_view.dart';
 import 'package:food_delivery/view/on_boarding/on_boarding_view.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class SignUpView extends StatefulWidget {
   const SignUpView({super.key});
@@ -64,15 +66,14 @@ class _SignUpViewState extends State<SignUpView> {
 
     endEditing();
     serviceCallSignUp({
-      "first_name": txtFirstName.text,
-      "last_name": txtLastName.text,
       "email": txtEmail.text,
       "phone": txtMobile.text,
-      "address": txtAddress.text,
+      "phone_country_code": "+91",
+      "first_name": txtFirstName.text,
+      "last_name": txtLastName.text,
+      "display_name": "${txtFirstName.text} ${txtLastName.text}",
       "password": txtPassword.text,
-      "user_type": "customer",
-      "push_token": "",
-      "device_type": Platform.isAndroid ? "A" : "I",
+      "primary_role": "customer",
     });
   }
 
@@ -84,10 +85,16 @@ class _SignUpViewState extends State<SignUpView> {
       withSuccess: (responseObj) async {
         Globs.hideHUD();
         if (responseObj[KKey.statusCode] == 201) {
-          final token = responseObj[KKey.authToken] as String?;
+          final data = responseObj["data"] as Map<String, dynamic>?;
+          final token = data?["authToken"] as String?;
           if (token != null && token.isNotEmpty) {
             Globs.udStringSet(token, Globs.userPayload);
             Globs.udBoolSet(true, Globs.userLogin);
+
+            await _requestPermissions();
+            await LocationService.fetchAndSaveCurrentLocation();
+
+            if (!mounted) return;
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
@@ -201,5 +208,14 @@ class _SignUpViewState extends State<SignUpView> {
         ),
       ),
     );
+  }
+
+  Future<void> _requestPermissions() async {
+    try {
+      await Permission.locationWhenInUse.request();
+      await Permission.notification.request();
+    } catch (e) {
+      debugPrint("Error requesting permissions: $e");
+    }
   }
 }

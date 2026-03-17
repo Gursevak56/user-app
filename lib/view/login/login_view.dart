@@ -8,8 +8,10 @@ import 'package:food_delivery/view/login/sing_up_view.dart';
 import 'package:food_delivery/view/on_boarding/on_boarding_view.dart';
 
 import '../../common/service_call.dart';
+import '../../common/location_service.dart';
 import '../../common_widget/round_icon_button.dart';
 import '../../common_widget/round_textfield.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -187,12 +189,17 @@ class _LoginViewState extends State<LoginView> {
       "login",
       withSuccess: (responseObj) async {
         Globs.hideHUD();
-        final token = responseObj[KKey.authToken] as String?;
+        final data = responseObj["data"] as Map<String, dynamic>?;
+        final token = data?["authToken"] as String?;
         if (token != null && token.isNotEmpty) {
           // Save token and login flag
           Globs.udStringSet(token, Globs.userPayload);
           Globs.udBoolSet(true, Globs.userLogin);
 
+          await _requestPermissions();
+          await LocationService.fetchAndSaveCurrentLocation();
+
+          if (!mounted) return;
           // Navigate to OnBoarding and remove login from stack
           Navigator.pushReplacement(
             context,
@@ -201,7 +208,7 @@ class _LoginViewState extends State<LoginView> {
             ),
           );
         } else {
-          mdShowAlert(Globs.appName, MSG.fail, () {});
+          mdShowAlert(Globs.appName, responseObj[KKey.message] ?? MSG.fail, () {});
         }
       },
       failure: (err) async {
@@ -209,5 +216,14 @@ class _LoginViewState extends State<LoginView> {
         mdShowAlert(Globs.appName, err.toString(), () {});
       },
     );
+  }
+
+  Future<void> _requestPermissions() async {
+    try {
+      await Permission.locationWhenInUse.request();
+      await Permission.notification.request();
+    } catch (e) {
+      debugPrint("Error requesting permissions: $e");
+    }
   }
 }

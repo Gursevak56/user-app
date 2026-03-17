@@ -3,6 +3,8 @@ import 'package:food_delivery/common/color_extension.dart';
 import 'package:food_delivery/common_widget/round_textfield.dart';
 
 import '../../common_widget/menu_item_row.dart';
+import '../../common/globs.dart';
+import '../../common/service_call.dart';
 import '../more/my_order_view.dart';
 import 'item_details_view.dart';
 
@@ -17,72 +19,55 @@ class MenuItemsView extends StatefulWidget {
 class _MenuItemsViewState extends State<MenuItemsView> {
   TextEditingController txtSearch = TextEditingController();
 
-  List menuItemsArr = [
-    {
-      "image": "assets/img/dess_1.png",
-      "name": "French Apple Pie",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Minute by tuk tuk",
-      "food_type": "Desserts"
-    },
-    {
-      "image": "assets/img/dess_2.png",
-      "name": "Dark Chocolate Cake",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Cakes by Tella",
-      "food_type": "Desserts"
-    },
-    {
-      "image": "assets/img/dess_3.png",
-      "name": "Street Shake",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Café Racer",
-      "food_type": "Desserts"
-    },
-    {
-      "image": "assets/img/dess_4.png",
-      "name": "Fudgy Chewy Brownies",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Minute by tuk tuk",
-      "food_type": "Desserts"
-    },
-    {
-      "image": "assets/img/dess_1.png",
-      "name": "French Apple Pie",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Minute by tuk tuk",
-      "food_type": "Desserts"
-    },
-    {
-      "image": "assets/img/dess_2.png",
-      "name": "Dark Chocolate Cake",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Cakes by Tella",
-      "food_type": "Desserts"
-    },
-    {
-      "image": "assets/img/dess_3.png",
-      "name": "Street Shake",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Café Racer",
-      "food_type": "Desserts"
-    },
-    {
-      "image": "assets/img/dess_4.png",
-      "name": "Fudgy Chewy Brownies",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Minute by tuk tuk",
-      "food_type": "Desserts"
-    },
-  ];
+  List menuCategoriesArr = [];
+  Map restaurantInfo = {};
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchRestaurantMenu();
+  }
+
+  void _fetchRestaurantMenu() async {
+    final lat = Globs.udValueDouble(Globs.userLat).toString();
+    final lng = Globs.udValueDouble(Globs.userLng).toString();
+    final resId = widget.mObj["id"]?.toString() ?? "";
+
+    if (resId.isEmpty) {
+      setState(() { isLoading = false; });
+      return;
+    }
+
+    final params = <String, String>{};
+    if (lat != "0.0" && lng != "0.0") {
+      params['lat'] = lat;
+      params['lng'] = lng;
+    }
+
+    await ServiceCall.get(
+      "${SVKey.restaurantBaseUrl}/api/restaurants/$resId/menu",
+      queryParameters: params,
+      isToken: true,
+      withSuccess: (responseObj) async {
+        if (responseObj[KKey.statusCode] == 200) {
+          final data = responseObj["data"] as Map<String, dynamic>? ?? {};
+          if (mounted) {
+            setState(() {
+              restaurantInfo = data["restaurant"] as Map? ?? {};
+              menuCategoriesArr = data["menu_categories"] as List? ?? [];
+              isLoading = false;
+            });
+          }
+        }
+      },
+      failure: (err) async {
+        if (mounted) {
+          setState(() { isLoading = false; });
+        }
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +83,7 @@ class _MenuItemsViewState extends State<MenuItemsView> {
           icon: Image.asset("assets/img/btn_back.png", width: 20, height: 20),
         ),
         title: Text(
-          widget.mObj["name"].toString(),
+          widget.mObj["name"]?.toString() ?? "Restaurant",
           style: TextStyle(
               color: TColor.primaryText,
               fontSize: 20,
@@ -146,25 +131,72 @@ class _MenuItemsViewState extends State<MenuItemsView> {
               const SizedBox(
                 height: 15,
               ),
-              ListView.builder(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                itemCount: menuItemsArr.length,
-                itemBuilder: ((context, index) {
-                  var mObj = menuItemsArr[index] as Map? ?? {};
-                  return MenuItemRow(
-                    mObj: mObj,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const ItemDetailsView()),
-                      );
-                    },
-                  );
-                }),
-              ),
+              isLoading 
+                  ? const Center(child: CircularProgressIndicator())
+                  : menuCategoriesArr.isEmpty 
+                      ? const Center(child: Padding(
+                          padding: EdgeInsets.all(20.0),
+                          child: Text("No menu items available"),
+                        ))
+                      : ListView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          itemCount: menuCategoriesArr.length,
+                          itemBuilder: ((context, catIndex) {
+                            var catObj = menuCategoriesArr[catIndex] as Map? ?? {};
+                            var catName = catObj["name"]?.toString() ?? "Items";
+                            var items = catObj["items"] as List? ?? [];
+                            
+                            if (items.isEmpty) return const SizedBox();
+
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                                  child: Text(
+                                    catName,
+                                    style: TextStyle(
+                                      color: TColor.primaryText,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                                ListView.builder(
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  shrinkWrap: true,
+                                  itemCount: items.length,
+                                  itemBuilder: ((context, index) {
+                                    var itemObj = items[index] as Map? ?? {};
+                                    // Adapt to MenuItemRow expected format
+                                    var uiObj = {
+                                      "image": itemObj["image_url"] ?? "assets/img/dess_1.png",
+                                      "name": itemObj["name"] ?? "",
+                                      "rate": itemObj["price"]?.toString() ?? "0",
+                                      "type": itemObj["is_veg"] == 1 ? "Veg" : "Non-Veg",
+                                      "food_type": catName,
+                                    };
+                                    return MenuItemRow(
+                                      mObj: uiObj,
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) => ItemDetailsView(
+                                                mObj: itemObj,
+                                                restaurantId: widget.mObj['id'] as int? ?? 0,
+                                              )),
+                                        );
+                                      },
+                                    );
+                                  }),
+                                ),
+                              ],
+                            );
+                          }),
+                        ),
             ],
           ),
         ),

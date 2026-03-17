@@ -1,9 +1,6 @@
-import 'package:custom_map_markers/custom_map_markers.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-
+import 'package:food_delivery/common/globs.dart';
+import 'package:food_delivery/common/service_call.dart';
 import '../../common/color_extension.dart';
 import '../../common_widget/round_textfield.dart';
 
@@ -15,43 +12,110 @@ class ChangeAddressView extends StatefulWidget {
 }
 
 class _ChangeAddressViewState extends State<ChangeAddressView> {
-  GoogleMapController? _controller;
-
-  final locations = const [
-    LatLng(37.42796133580664, -122.085749655962),
-  ];
-
-  late List<MarkerData> _customMarkers;
-
-  static const CameraPosition _kLake = CameraPosition(
-      bearing: 192.8334901395799,
-      target: LatLng(37.42796133580664, -122.085749655962),
-      // tilt: 59.440717697143555,
-      zoom: 14.151926040649414);
+  List<Map<String, dynamic>> addresses = [];
+  bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _customMarkers = [
-      MarkerData(
-          marker:
-              Marker(markerId: const MarkerId('id-1'), position: locations[0]),
-          child: _customMarker('Everywhere\nis a Widgets', Colors.blue)),
-    ];
+    _fetchAddresses();
   }
 
-  _customMarker(String symbol, Color color) {
-    return SizedBox(
-      width: 100,
-      child: Column(
-        children: [
-          Image.asset(
-            'assets/img/map_pin.png',
-            width: 35,
-            fit: BoxFit.contain,
-          )
-        ],
-      ),
+  void _fetchAddresses() async {
+    setState(() => isLoading = true);
+
+    await ServiceCall.get(
+      SVKey.svAddresses,
+      isToken: true,
+      withSuccess: (responseObj) async {
+        if (!mounted) return;
+        setState(() => isLoading = false);
+        if (responseObj['status'] == 'success' && responseObj['data'] != null) {
+          addresses = List<Map<String, dynamic>>.from(responseObj['data']);
+          setState(() {});
+        }
+      },
+      failure: (err) async {
+        if (!mounted) return;
+        setState(() => isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(err.toString()), backgroundColor: Colors.red),
+        );
+      },
+    );
+  }
+
+  void _showAddAddressDialog() {
+    final txtLabel = TextEditingController(text: "Home");
+    final txtStreet = TextEditingController();
+    final txtCity = TextEditingController();
+    final txtZipCode = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text("Add New Address"),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RoundTitleTextfield(title: "Label", hintText: "Home/Work/Etc", controller: txtLabel),
+                const SizedBox(height: 10),
+                RoundTitleTextfield(title: "Street", hintText: "123 Main St", controller: txtStreet),
+                const SizedBox(height: 10),
+                RoundTitleTextfield(title: "City", hintText: "City Name", controller: txtCity),
+                const SizedBox(height: 10),
+                RoundTitleTextfield(title: "Zip Code", hintText: "Postal Code", controller: txtZipCode),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (txtStreet.text.trim().isEmpty || txtCity.text.trim().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Street and City are required")));
+                  return;
+                }
+                
+                final payload = {
+                  "label": txtLabel.text.trim(),
+                  "street": txtStreet.text.trim(),
+                  "city": txtCity.text.trim(),
+                  "zipCode": txtZipCode.text.trim(),
+                  "latitude": 0.0,
+                  "longitude": 0.0,
+                  "is_default": addresses.isEmpty,
+                };
+
+                Globs.showHUD();
+                await ServiceCall.post(
+                  payload,
+                  SVKey.svAddresses,
+                  isToken: true,
+                  withSuccess: (res) async {
+                    Globs.hideHUD();
+                    Navigator.pop(ctx);
+                    if (!mounted) return;
+                    _fetchAddresses();
+                  },
+                  failure: (err) async {
+                    Globs.hideHUD();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(err.toString()), backgroundColor: Colors.red),
+                    );
+                  },
+                );
+              },
+              child: const Text("Add"),
+            )
+          ],
+        );
+      },
     );
   }
 
@@ -64,80 +128,58 @@ class _ChangeAddressViewState extends State<ChangeAddressView> {
         scrolledUnderElevation: 0,
         elevation: 0,
         leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
           icon: Image.asset("assets/img/btn_back.png", width: 20, height: 20),
         ),
-        centerTitle: false,
         title: Text(
-          "Change Address",
-          style: TextStyle(
-              color: TColor.primaryText,
-              fontSize: 20,
-              fontWeight: FontWeight.w800),
+          "My Addresses",
+          style: TextStyle(color: TColor.primaryText, fontSize: 20, fontWeight: FontWeight.w800),
         ),
       ),
-      body: CustomGoogleMapMarkerBuilder(
-        //screenshotDelay: const Duration(seconds: 4),
-        customMarkers: _customMarkers,
-        builder: (BuildContext context, Set<Marker>? markers) {
-          if (markers == null) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          return GoogleMap(
-            mapType: MapType.normal,
-            initialCameraPosition: _kLake,
-            compassEnabled: false,
-            gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
-              Factory<OneSequenceGestureRecognizer>(
-                  () => PanGestureRecognizer()),
-            },
-            markers: markers,
-            onMapCreated: (GoogleMapController controller) {
-              _controller = controller;
-            },
-          );
-        },
-      ),
-      bottomNavigationBar: BottomAppBar(
-          child: SafeArea(
-              child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 25),
-            child: RoundTextfield(
-              hintText: "Search Address",
-              left: Icon(Icons.search, color: TColor.primaryText),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 25),
-            child: Row(children: [
-              Image.asset('assets/img/fav_icon.png', width: 35, height: 35),
-              const SizedBox(
-                width: 8,
-              ),
-              Expanded(
-                child: Text(
-                  "Choose a saved place",
-                  style: TextStyle(
-                      color: TColor.primaryText,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : addresses.isEmpty
+              ? Center(
+                  child: Text(
+                    "No saved addresses",
+                    style: TextStyle(color: TColor.secondaryText, fontSize: 16),
+                  ),
+                )
+              : ListView.separated(
+                  padding: const EdgeInsets.all(20),
+                  itemCount: addresses.length,
+                  separatorBuilder: (context, index) => const Divider(),
+                  itemBuilder: (context, index) {
+                    final addr = addresses[index];
+                    return ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Icon(
+                        addr['label']?.toString().toLowerCase() == 'work' ? Icons.work : Icons.home,
+                        color: TColor.primary,
+                      ),
+                      title: Text(
+                        addr['label']?.toString() ?? 'Address',
+                        style: TextStyle(color: TColor.primaryText, fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(
+                        "${addr['street'] ?? ''}, ${addr['city'] ?? ''} - ${addr['zipCode'] ?? ''}",
+                        style: TextStyle(color: TColor.secondaryText),
+                      ),
+                      trailing: addr['is_default'] == true
+                          ? Icon(Icons.check_circle, color: TColor.primary)
+                          : null,
+                      onTap: () {
+                        // Return the selected address if it was opened for selection
+                        Navigator.pop(context, addr);
+                      },
+                    );
+                  },
                 ),
-              ),
-              Image.asset(
-                'assets/img/btn_next.png',
-                width: 15,
-                height: 15,
-                color: TColor.primaryText,
-              )
-            ]),
-          ),
-        ],
-      ))),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showAddAddressDialog,
+        backgroundColor: TColor.primary,
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
     );
   }
 }

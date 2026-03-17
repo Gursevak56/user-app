@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../common/color_extension.dart';
+import '../../common/globs.dart';
+import '../../common/service_call.dart';
 import '../../common_widget/round_textfield.dart';
 import '../more/my_order_view.dart';
 import 'menu_items_view.dart';
@@ -13,29 +15,51 @@ class MenuView extends StatefulWidget {
 }
 
 class _MenuViewState extends State<MenuView> {
-  List menuArr = [
-    {
-      "name": "Food",
-      "image": "assets/img/menu_1.png",
-      "items_count": "120",
-    },
-    {
-      "name": "Beverages",
-      "image": "assets/img/menu_2.png",
-      "items_count": "220",
-    },
-    {
-      "name": "Desserts",
-      "image": "assets/img/menu_3.png",
-      "items_count": "155",
-    },
-    {
-      "name": "Promotions",
-      "image": "assets/img/menu_4.png",
-      "items_count": "25",
-    },
-  ];
+  List menuArr = [];
+  bool isLoading = true;
   TextEditingController txtSearch = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchRestaurants();
+  }
+
+  void _fetchRestaurants() async {
+    final lat = Globs.udValueDouble(Globs.userLat).toString();
+    final lng = Globs.udValueDouble(Globs.userLng).toString();
+    
+    final params = <String, String>{
+      "page": "1",
+      "limit": "20"
+    };
+    if (lat != "0.0" && lng != "0.0") {
+      params['lat'] = lat;
+      params['lng'] = lng;
+    }
+
+    await ServiceCall.get(
+      "${SVKey.restaurantBaseUrl}/api/restaurants",
+      queryParameters: params,
+      isToken: true,
+      withSuccess: (responseObj) async {
+        if (responseObj[KKey.statusCode] == 200) {
+          final data = responseObj["data"] as Map<String, dynamic>? ?? {};
+          if (mounted) {
+            setState(() {
+              menuArr = data["restaurants"] as List? ?? [];
+              isLoading = false;
+            });
+          }
+        }
+      },
+      failure: (err) async {
+        if (mounted) {
+          setState(() { isLoading = false; });
+        }
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -115,112 +139,124 @@ class _MenuViewState extends State<MenuView> {
                   padding: const EdgeInsets.symmetric(vertical: 20),
                   child: Column(
                     children: [
-                      ListView.builder(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 30, horizontal: 20),
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: menuArr.length,
-                          itemBuilder: ((context, index) {
-                            var mObj = menuArr[index] as Map? ?? {};
-                            return GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => MenuItemsView(
-                                      mObj: mObj,
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: Stack(
-                                alignment: Alignment.centerRight,
-                                children: [
-                                  Container(
-                                    margin: const EdgeInsets.only(
-                                        top: 8, bottom: 8, right: 20),
-                                    width: media.width - 100,
-                                    height: 90,
-                                    decoration: const BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.only(
-                                            topLeft: Radius.circular(25),
-                                            bottomLeft: Radius.circular(25),
-                                            topRight: Radius.circular(10),
-                                            bottomRight: Radius.circular(10)),
-                                        boxShadow: [
-                                          BoxShadow(
-                                              color: Colors.black12,
-                                              blurRadius: 7,
-                                              offset: Offset(0, 4))
-                                        ]),
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Image.asset(
-                                        mObj["image"].toString(),
-                                        width: 80,
-                                        height: 80,
-                                        fit: BoxFit.contain,
-                                      ),
-                                      const SizedBox(
-                                        width: 15,
-                                      ),
-                                      Expanded(
-                                        child: Column(
+                      isLoading 
+                        ? const Center(child: CircularProgressIndicator()) 
+                        : menuArr.isEmpty 
+                            ? const Padding(
+                                padding: EdgeInsets.all(20),
+                                child: Text("No restaurants found."),
+                              )
+                            : ListView.builder(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 30, horizontal: 20),
+                                physics: const NeverScrollableScrollPhysics(),
+                                shrinkWrap: true,
+                                itemCount: menuArr.length,
+                                itemBuilder: ((context, index) {
+                                  var mObj = menuArr[index] as Map? ?? {};
+                                  return GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => MenuItemsView(
+                                            mObj: mObj,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Stack(
+                                      alignment: Alignment.centerRight,
+                                      children: [
+                                        Container(
+                                          margin: const EdgeInsets.only(
+                                              top: 8, bottom: 8, right: 20),
+                                          width: media.width - 100,
+                                          height: 90,
+                                          decoration: const BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.only(
+                                                  topLeft: Radius.circular(25),
+                                                  bottomLeft: Radius.circular(25),
+                                                  topRight: Radius.circular(10),
+                                                  bottomRight: Radius.circular(10)),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                    color: Colors.black12,
+                                                    blurRadius: 7,
+                                                    offset: Offset(0, 4))
+                                              ]),
+                                        ),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.start,
                                           crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                              CrossAxisAlignment.center,
                                           children: [
-                                            Text(
-                                              mObj["name"].toString(),
-                                              style: TextStyle(
-                                                  color: TColor.primaryText,
-                                                  fontSize: 22,
-                                                  fontWeight: FontWeight.w700),
+                                            Image.asset(
+                                              // fallback image logic since real may be network
+                                              "assets/img/pizza_hub.png",
+                                              width: 80,
+                                              height: 80,
+                                              fit: BoxFit.contain,
                                             ),
                                             const SizedBox(
-                                              height: 4,
+                                              width: 15,
                                             ),
-                                            Text(
-                                              "${mObj["items_count"].toString()} items",
-                                              style: TextStyle(
-                                                  color: TColor.secondaryText,
-                                                  fontSize: 11),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    mObj["name"]?.toString() ?? "Restaurant",
+                                                    style: TextStyle(
+                                                        color: TColor.primaryText,
+                                                        fontSize: 18,
+                                                        fontWeight: FontWeight.w700),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 4,
+                                                  ),
+                                                  Text(
+                                                    mObj["cuisine"]?.toString() ?? "Various",
+                                                    style: TextStyle(
+                                                        color: TColor.secondaryText,
+                                                        fontSize: 11),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Container(
+                                              width: 35,
+                                              height: 35,
+                                              decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius:
+                                                      BorderRadius.circular(17.5),
+                                                  boxShadow: const [
+                                                    BoxShadow(
+                                                        color: Colors.black12,
+                                                        blurRadius: 4,
+                                                        offset: Offset(0, 2))
+                                                  ]),
+                                              alignment: Alignment.center,
+                                              child: Image.asset(
+                                                "assets/img/btn_next.png",
+                                                width: 15,
+                                                height: 15,
+                                                color: TColor.secondary,
+                                              ),
                                             ),
                                           ],
                                         ),
-                                      ),
-                                      Container(
-                                        width: 35,
-                                        height: 35,
-                                        decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius:
-                                                BorderRadius.circular(17.5),
-                                            boxShadow: const [
-                                              BoxShadow(
-                                                  color: Colors.black12,
-                                                  blurRadius: 4,
-                                                  offset: Offset(0, 2))
-                                            ]),
-                                        alignment: Alignment.center,
-                                        child: Image.asset(
-                                          "assets/img/btn_next.png",
-                                          width: 15,
-                                          height: 15,
-                                          color: TColor.secondary,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            );
-                          }))
+                                      ],
+                                    ),
+                                  );
+                                }))
                     ],
                   ),
                 ),

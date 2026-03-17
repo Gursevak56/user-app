@@ -7,12 +7,20 @@ import 'package:food_delivery/common_widget/round_button.dart';
 import 'package:food_delivery/common_widget/title_rows.dart';
 import 'package:food_delivery/view/more/my_order_view.dart';
 import 'package:food_delivery/view/more/popular_restaurants.dart';
+import 'package:food_delivery/common/service_call.dart';
+import 'package:food_delivery/common/globs.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class HomeFoodTabView extends StatelessWidget {
-  HomeFoodTabView({
+class HomeFoodTabView extends StatefulWidget {
+  const HomeFoodTabView({
     super.key,
   });
+
+  @override
+  State<HomeFoodTabView> createState() => _HomeFoodTabViewState();
+}
+
+class _HomeFoodTabViewState extends State<HomeFoodTabView> {
 
   final List foodRecentOrderArr = [
     {
@@ -32,108 +40,53 @@ class HomeFoodTabView extends StatelessWidget {
     },
   ];
 
-  final List foodCatArr = [
-    {"image": "assets/img/cat_offer.png", "name": "Offers"},
-    {"image": "assets/img/cat_sri.png", "name": "Sri Lankan"},
-    {"image": "assets/img/cat_3.png", "name": "Italian"},
-    {"image": "assets/img/cat_4.png", "name": "Indian"},
-  ];
+  List bannersArr = [];
+  List foodCatArr = [];
+  List restaurants = [];
+  bool isLoading = true;
 
-  final List popArr = [
-    {
-      "name": "Minute by tuk tuk",
-      "image": "assets/img/res_1.png",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Asian Fusion",
-      "food_type": "Café"
-    },
-    {
-      "name": "Café de Noir",
-      "image": "assets/img/res_2.png",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "French",
-      "food_type": "Café"
-    },
-    {
-      "name": "Bakes by Tella",
-      "image": "assets/img/res_3.png",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Bakery",
-      "food_type": "Pastries"
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _fetchHomeData();
+  }
 
-  final List foodMostPopArr = [
-    {
-      "title": "Indian",
-      "time": "30-40 mins",
-      "image": "assets/img/indian_food.png",
-    },
-    {
-      "title": "Chinese",
-      "time": "30-40 mins",
-      "image": "assets/img/chinese_food.png",
-    },
-    {
-      "title": "South Indian",
-      "time": "30-40 mins",
-      "image": "assets/img/south_indian_food.png",
-    },
-    {
-      "title": "Fast Food",
-      "time": "30-40 mins",
-      "image": "assets/img/fast_food.png",
-    },
-  ];
+  void _fetchHomeData() async {
+    final lat = Globs.udValueDouble(Globs.userLat).toString();
+    final lng = Globs.udValueDouble(Globs.userLng).toString();
+    
+    // Fallbacks if lat/lng are missing (user denied location)
+    final params = <String, String>{};
+    if (lat != "0.0" && lng != "0.0") {
+      params['lat'] = lat;
+      params['lng'] = lng;
+      params['radius'] = "10";
+    }
 
-  final List foodRecentArr = [
-    {
-      "image": "assets/img/item_1.png",
-      "name": "Mulberry Pizza by Josh",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Cafe",
-      "food_type": "Western Food"
-    },
-    {
-      "image": "assets/img/item_2.png",
-      "name": "Barita",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Cafe",
-      "food_type": "Western Food"
-    },
-    {
-      "image": "assets/img/item_3.png",
-      "name": "Pizza Rush Hour",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Cafe",
-      "food_type": "Western Food"
-    },
-  ];
-
-  final List restaurants = [
-    {
-      "image": "assets/img/biryani_junction.png",
-      "name": "Biryani Junction",
-      "foodType": "Hyderabadi",
-      "foodCat": "Indian",
-      "rate": "4.3",
-      "time": "30-40 mins"
-    },
-    {
-      "image": "assets/img/pizza_hub.png",
-      "name": "Pizza Hub",
-      "foodType": "Italia",
-      "foodCat": "Fast Food",
-      "rate": "4.1",
-      "time": "25-35 mins"
-    },
-  ];
+    await ServiceCall.get(
+      "${SVKey.restaurantBaseUrl}/api/home",
+      queryParameters: params,
+      isToken: true,
+      withSuccess: (responseObj) async {
+        if (responseObj[KKey.statusCode] == 200) {
+          final data = responseObj["data"] as Map<String, dynamic>? ?? {};
+          if (mounted) {
+            setState(() {
+              bannersArr = data["banners"] as List? ?? [];
+              foodCatArr = data["categories"] as List? ?? [];
+              restaurants = data["recommended_restaurants"] as List? ?? [];
+              isLoading = false;
+            });
+          }
+        }
+      },
+      failure: (err) async {
+        if (mounted) {
+          setState(() { isLoading = false; });
+        }
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -265,24 +218,33 @@ class HomeFoodTabView extends StatelessWidget {
         ),
         SizedBox(
           height: 240,
-          child: GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              mainAxisExtent: 110,
-            ),
-            physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: foodMostPopArr.length,
-            itemBuilder: ((context, index) {
-              var mObj = foodMostPopArr[index] as Map? ?? {};
-              return FoodTabCatCell(
-                mObj: mObj,
-                onTap: () {},
-              );
-            }),
-          ),
+          child: isLoading 
+              ? const Center(child: CircularProgressIndicator()) 
+              : foodCatArr.isEmpty 
+                  ? const Center(child: Text("No categories available"))
+                  : GridView.builder(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        mainAxisExtent: 110,
+                      ),
+                      physics: const NeverScrollableScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: foodCatArr.length,
+                      itemBuilder: ((context, index) {
+                        var mObj = foodCatArr[index] as Map? ?? {};
+                        // Map the API structure to the UI structure expected by FoodTabCatCell
+                        var uiObj = {
+                          "title": mObj["name"] ?? "",
+                          "image": mObj["image_url"] ?? "assets/img/cat_3.png", // fallback local img
+                        };
+                        return FoodTabCatCell(
+                          mObj: uiObj,
+                          onTap: () {},
+                        );
+                      }),
+                    ),
         ),
         const SizedBox(
           height: 12,
@@ -297,18 +259,31 @@ class HomeFoodTabView extends StatelessWidget {
         const SizedBox(
           height: 12,
         ),
-        ListView.builder(
-          physics: const BouncingScrollPhysics(),
-          shrinkWrap: true,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: restaurants.length,
-          itemBuilder: ((context, index) {
-            var rObj = restaurants[index] as Map? ?? {};
-            return Restaurants(
-              rObj: rObj,
-            );
-          }),
-        ),
+        isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : restaurants.isEmpty
+                ? const Center(child: Text("No restaurants found"))
+                : ListView.builder(
+                    physics: const BouncingScrollPhysics(),
+                    shrinkWrap: true,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: restaurants.length,
+                    itemBuilder: ((context, index) {
+                      var rObj = restaurants[index] as Map? ?? {};
+                      // Map the api properties "rating", "delivery_time", "cuisine", "image_url" to UI keys.
+                      var uiObj = {
+                        "image": rObj["image_url"] ?? "assets/img/pizza_hub.png",
+                        "name": rObj["name"] ?? "",
+                        "foodType": rObj["cuisine"] ?? "",
+                        "foodCat": (rObj["tags"] as List?)?.join(", ") ?? "",
+                        "rate": rObj["rating"]?.toString() ?? "0",
+                        "time": rObj["delivery_time"] ?? "",
+                      };
+                      return Restaurants(
+                        rObj: uiObj,
+                      );
+                    }),
+                  ),
         const SizedBox(
           height: 50,
         )
