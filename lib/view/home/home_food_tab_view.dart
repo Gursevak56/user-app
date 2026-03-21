@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:food_delivery/common/color_extension.dart';
 import 'package:food_delivery/common_widget/food_recent_orders_cell.dart';
 import 'package:food_delivery/common_widget/food_tab_cat_cell.dart';
@@ -21,34 +22,46 @@ class HomeFoodTabView extends StatefulWidget {
 }
 
 class _HomeFoodTabViewState extends State<HomeFoodTabView> {
-
-  final List foodRecentOrderArr = [
-    {
-      "image": "assets/img/paneer_butter.png",
-      "name": "Paneer Butter",
-      "delivered_date": "3 days ago",
-    },
-    {
-      "image": "assets/img/veg_burger.png",
-      "name": "Veg Burger",
-      "delivered_date": "7 days ago",
-    },
-    {
-      "image": "assets/img/milk.png",
-      "name": "Milk",
-      "delivered_date": "7 days ago",
-    },
-  ];
+  List foodRecentOrderArr = [];
 
   List bannersArr = [];
   List foodCatArr = [];
   List restaurants = [];
   bool isLoading = true;
+  bool isLoadingRecent = true;
 
   @override
   void initState() {
     super.initState();
     _fetchHomeData();
+    if (Globs.udValueBool(Globs.userLogin)) {
+      _fetchRecentOrders();
+    } else {
+      isLoadingRecent = false;
+    }
+  }
+
+  void _fetchRecentOrders() async {
+    await ServiceCall.get(
+      "${SVKey.restaurantBaseUrl}/api/orders/recent",
+      isToken: true,
+      withSuccess: (responseObj) async {
+        if (responseObj[KKey.statusCode] == 200) {
+          final data = responseObj["data"] as Map<String, dynamic>? ?? {};
+          if (mounted) {
+            setState(() {
+              foodRecentOrderArr = data["recent_orders"] as List? ?? [];
+              isLoadingRecent = false;
+            });
+          }
+        }
+      },
+      failure: (err) async {
+        if (mounted) {
+          setState(() { isLoadingRecent = false; });
+        }
+      },
+    );
   }
 
   void _fetchHomeData() async {
@@ -66,7 +79,7 @@ class _HomeFoodTabViewState extends State<HomeFoodTabView> {
     await ServiceCall.get(
       "${SVKey.restaurantBaseUrl}/api/home",
       queryParameters: params,
-      isToken: true,
+      isToken: Globs.udValueBool(Globs.userLogin),
       withSuccess: (responseObj) async {
         if (responseObj[KKey.statusCode] == 200) {
           final data = responseObj["data"] as Map<String, dynamic>? ?? {};
@@ -119,7 +132,7 @@ class _HomeFoodTabViewState extends State<HomeFoodTabView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Flat ₹100 off",
+                        bannersArr.isNotEmpty ? bannersArr[0]['title'] ?? "Special Offer" : "Flat ₹100 off",
                         style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
@@ -127,7 +140,7 @@ class _HomeFoodTabViewState extends State<HomeFoodTabView> {
                         ),
                       ),
                       Text(
-                        "on first food order",
+                        bannersArr.isNotEmpty ? bannersArr[0]['subtitle'] ?? "Grab it now" : "on first food order",
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
@@ -153,52 +166,74 @@ class _HomeFoodTabViewState extends State<HomeFoodTabView> {
                     ],
                   ),
                 ),
-                ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topRight: Radius.circular(20),
-                    bottomRight: Radius.circular(20),
-                  ),
-                  child: Image.asset(
-                    "assets/img/food_promotion_banner.png",
-                  ),
-                )
+                if (bannersArr.isNotEmpty && bannersArr[0]['image_url'] != null)
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        topRight: Radius.circular(20),
+                        bottomRight: Radius.circular(20),
+                      ),
+                      child: CachedNetworkImage(
+                        imageUrl: bannersArr[0]['image_url'],
+                        fit: BoxFit.cover,
+                        height: double.infinity,
+                      ),
+                    ),
+                  )
+                else
+                  ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      topRight: Radius.circular(20),
+                      bottomRight: Radius.circular(20),
+                    ),
+                    child: Image.asset(
+                      "assets/img/food_promotion_banner.png",
+                    ),
+                  )
               ],
             ),
           ),
         ),
-        const SizedBox(
-          height: 12,
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: ViewAllTitleRow(
-            title: "Recent Orders",
-            onView: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const PopularReestaurants()));
-            },
+        if (Globs.udValueBool(Globs.userLogin)) ...[
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: ViewAllTitleRow(
+              title: "Recent Orders",
+              onView: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const PopularReestaurants()));
+              },
+            ),
           ),
-        ),
-        SizedBox(
-          height: 88,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: foodRecentOrderArr.length,
-            itemBuilder: ((context, index) {
-              var fRObj = foodRecentOrderArr[index] as Map? ?? {};
-              return FoodRecentOrdersCell(
-                fRObj: fRObj,
-                onTap: () {},
-              );
-            }),
+          SizedBox(
+            height: 88,
+            child: isLoadingRecent
+                ? const Center(child: CircularProgressIndicator())
+                : foodRecentOrderArr.isEmpty
+                    ? const Center(child: Text("No recent orders found"))
+                    : ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: foodRecentOrderArr.length,
+                        itemBuilder: ((context, index) {
+                          var fRObj = foodRecentOrderArr[index] as Map? ?? {};
+                          var uiObj = {
+                            "image": fRObj["image_url"] ?? fRObj["image"] ?? "assets/img/paneer_butter.png",
+                            "name": fRObj["name"] ?? "",
+                            "delivered_date": fRObj["delivered_date"] ?? "",
+                          };
+                          return FoodRecentOrdersCell(
+                            fRObj: uiObj,
+                            onTap: () {},
+                          );
+                        }),
+                      ),
           ),
-        ),
-        const SizedBox(
-          height: 12,
-        ),
+          const SizedBox(height: 12),
+        ],
         Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: 16,
@@ -262,7 +297,49 @@ class _HomeFoodTabViewState extends State<HomeFoodTabView> {
         isLoading
             ? const Center(child: CircularProgressIndicator())
             : restaurants.isEmpty
-                ? const Center(child: Text("No restaurants found"))
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 40),
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: TColor.primary.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Image.asset(
+                          "assets/img/location-pin.png",
+                          width: 80,
+                          height: 80,
+                          color: TColor.primary,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        "Coming Soon! 🚀",
+                        style: TextStyle(
+                          color: TColor.primaryText,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 12),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 40),
+                        child: Text(
+                          "We are not currently serving in your area, but we're working hard to get there buddy!\nStay tuned for delicious updates.",
+                          style: TextStyle(
+                            color: TColor.secondaryText,
+                            fontSize: 16,
+                            height: 1.5,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      const SizedBox(height: 60),
+                    ],
+                  )
                 : ListView.builder(
                     physics: const BouncingScrollPhysics(),
                     shrinkWrap: true,

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:food_delivery/common/globs.dart';
 
 class LocationService {
@@ -40,8 +41,37 @@ class LocationService {
       // Save to SharedPreferences using Globs
       Globs.udDoubleSet(position.latitude, Globs.userLat);
       Globs.udDoubleSet(position.longitude, Globs.userLng);
+
+      // Perform reverse geocoding to get human-readable address
+      await _fetchAndSaveAddress(position.latitude, position.longitude);
+
     } catch (e) {
       debugPrint("Error fetching location: $e");
+    }
+  }
+
+  static Future<void> _fetchAndSaveAddress(double lat, double lng) async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks.first;
+        // Typically something like: "Locality, AdministrativeArea" -> "Roorkee, UP"
+        String locality = place.locality ?? place.subLocality ?? "";
+        String adminArea = place.administrativeArea ?? "";
+        
+        String address = [locality, adminArea].where((s) => s.isNotEmpty).join(", ");
+        
+        if (address.isEmpty && place.country != null) {
+          address = place.country!;
+        }
+
+        if (address.isNotEmpty) {
+          Globs.udStringSet(address, Globs.userAddress);
+          debugPrint('Fetched Address: $address');
+        }
+      }
+    } catch (e) {
+      debugPrint("Error fetching address from coordinates: $e");
     }
   }
 }

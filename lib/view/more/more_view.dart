@@ -5,6 +5,8 @@ import 'package:food_delivery/view/more/my_order_view.dart';
 import 'package:food_delivery/view/more/notification_view.dart';
 import 'package:food_delivery/view/more/payment_details_view.dart';
 import 'package:food_delivery/view/profile/profile_view.dart';
+import 'package:food_delivery/view/order/order_history_view.dart';
+import 'package:food_delivery/view/more/favorite_view.dart';
 
 import '../../common/color_extension.dart';
 import '../../common/service_call.dart';
@@ -46,6 +48,18 @@ class _MoreViewState extends State<MoreView> {
       "index": "5",
       "name": "About Us",
       "image": "assets/img/more_info.png",
+      "base": 0
+    },
+    {
+      "index": "7",
+      "name": "Order History",
+      "image": "assets/img/more_my_order.png",
+      "base": 0
+    },
+    {
+      "index": "8",
+      "name": "My Favorites",
+      "image": "assets/img/favorites_btn_2.png",
       "base": 0
     },
     {
@@ -140,8 +154,50 @@ class _MoreViewState extends State<MoreView> {
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) => const AboutUsView()));
+                            break;
+                          case "7":
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const OrderHistoryView()));
+                            break;
+                          case "8":
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const FavoriteView()));
+                            break;
                           case "6":
-                            ServiceCall.logout();
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                title: Text('Sign Out',
+                                    style: TextStyle(
+                                        color: TColor.primaryText,
+                                        fontWeight: FontWeight.w700)),
+                                content: const Text(
+                                    'Are you sure you want to sign out?'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx),
+                                    child: Text('Cancel',
+                                        style: TextStyle(
+                                            color: TColor.secondaryText)),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(ctx);
+                                      ServiceCall.logout();
+                                    },
+                                    child: const Text('Sign Out',
+                                        style: TextStyle(color: Colors.red)),
+                                  ),
+                                ],
+                              ),
+                            );
 
                           default:
                         }

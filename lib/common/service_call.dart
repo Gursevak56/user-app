@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:food_delivery/common/globs.dart';
 import 'package:food_delivery/common/locator.dart';
 import 'package:http/http.dart' as http;
@@ -248,9 +249,35 @@ class ServiceCall {
     }
   }
 
-  static void logout() {
+  static Future<void> logout() async {
+    // Remove FCM device token from backend before clearing session
+    try {
+      final messaging = await _getFcmToken();
+      if (messaging != null && messaging.isNotEmpty) {
+        await delete(
+          '${SVKey.restaurantBaseUrl}/notifications/device-token',
+          body: {'token': messaging},
+          isToken: true,
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) print('Error removing device token on logout: $e');
+    }
+
+    // Clear all stored user data
     Globs.udBoolSet(false, Globs.userLogin);
+    Globs.udStringSet('', Globs.userPayload);
+    Globs.udRemove('user_id');
+    Globs.udRemove(Globs.userProfile);
     userPayload = {};
     navigationService.navigateTo("welcome");
+  }
+
+  static Future<String?> _getFcmToken() async {
+    try {
+      return await FirebaseMessaging.instance.getToken();
+    } catch (e) {
+      return null;
+    }
   }
 }

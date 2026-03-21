@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "505647378372",
+    "project_id": "mangaale",
+    "storage_bucket": "mangaale.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:505647378372:android:787c350db34a85f568be91",
+        "android_client_info": {
+          "package_name": "com.mangaale.user"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAGrcsBsqk73iD2yc3PAVngaUsP9OuKJg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

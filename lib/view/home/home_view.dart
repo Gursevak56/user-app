@@ -1,11 +1,14 @@
 import 'package:animated_segmented_tab_control/animated_segmented_tab_control.dart';
 import 'package:flutter/material.dart';
+import 'package:food_delivery/common/location_service.dart';
 import 'package:food_delivery/common/color_extension.dart';
 import 'package:food_delivery/common_widget/round_textfield.dart';
 import 'package:food_delivery/common_widget/start_order_button.dart';
 import 'package:food_delivery/view/home/home_food_tab_view.dart';
 import 'package:food_delivery/view/home/home_grocery_tab_view.dart';
+import 'package:food_delivery/view/notifications/notifications_view.dart';
 import '../more/my_order_view.dart';
+import 'package:food_delivery/common/globs.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -31,6 +34,21 @@ class _HomeViewState extends State<HomeView>
     _tabController.addListener(() {
       setState(() {}); // rebuild when tab changes
     });
+    
+    // Fetch location seamlessly on first load.
+    _fetchLocationAndData();
+  }
+
+  void _fetchLocationAndData() async {
+    await LocationService.fetchAndSaveCurrentLocation();
+    // After location is saved to Globs, you might want to force HomeFoodTabView to reload
+    // but typically it handles its own state or we can just let it fetch whenever ready.
+    // For a simple trigger, a rebuild of HomeView can work if tabs depend on it, 
+    // though HomeFoodTabView has already called its API.
+    // A more robust way is using a stream or provider, but giving it a simple rebuild is a start.
+    if (mounted) {
+      setState(() {}); // Optionally rebuild if we show location name
+    }
   }
 
   @override
@@ -51,15 +69,21 @@ class _HomeViewState extends State<HomeView>
         scrolledUnderElevation: 0,
         elevation: 0,
         automaticallyImplyLeading: false,
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.location_on_sharp),
-            Text(
-              "Roorkee, UP",
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
+            const Icon(Icons.location_on_sharp),
+            Expanded(
+              child: Text(
+                Globs.udValueString(Globs.userAddress).isNotEmpty 
+                    ? Globs.udValueString(Globs.userAddress)
+                    : "Fetching location...",
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -70,7 +94,20 @@ class _HomeViewState extends State<HomeView>
             child: Row(
               children: [
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    if (Globs.udValueBool(Globs.userLogin)) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const NotificationsView(),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Please login to see notifications")),
+                      );
+                    }
+                  },
                   icon: Icon(
                     Icons.notifications,
                     color: TColor.primaryText,

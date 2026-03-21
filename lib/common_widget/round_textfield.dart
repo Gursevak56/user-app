@@ -62,6 +62,7 @@ class RoundTitleTextfield extends StatelessWidget {
   final String hintText;
   final TextInputType? keyboardType;
   final bool obscureText;
+  final bool readOnly;
   final Color? bgColor;
   final Widget? left;
 
@@ -74,6 +75,7 @@ class RoundTitleTextfield extends StatelessWidget {
     this.bgColor,
     this.left,
     this.obscureText = false,
+    this.readOnly = false,
   });
 
   @override
@@ -100,6 +102,7 @@ class RoundTitleTextfield extends StatelessWidget {
                     controller: controller,
                     obscureText: obscureText,
                     keyboardType: keyboardType,
+                    readOnly: readOnly,
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 20,

@@ -1,4 +1,4 @@
-package com.example.tmp_flutter_app
+package com.mangaale.user
 
 import io.flutter.embedding.android.FlutterActivity
 

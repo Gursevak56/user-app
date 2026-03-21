@@ -4,6 +4,7 @@ import '../../common/color_extension.dart';
 import '../../common/globs.dart';
 import '../../common/service_call.dart';
 import '../../common_widget/round_textfield.dart';
+import '../../common_widget/favorite_toggle_btn.dart';
 import '../more/my_order_view.dart';
 import 'menu_items_view.dart';
 
@@ -18,11 +19,29 @@ class _MenuViewState extends State<MenuView> {
   List menuArr = [];
   bool isLoading = true;
   TextEditingController txtSearch = TextEditingController();
+  String _searchQuery = '';
+
+  List get _filteredMenuArr {
+    if (_searchQuery.isEmpty) return menuArr;
+    return menuArr.where((item) {
+      final name = (item as Map?)?['name']?.toString().toLowerCase() ?? '';
+      return name.contains(_searchQuery.toLowerCase());
+    }).toList();
+  }
 
   @override
   void initState() {
     super.initState();
+    txtSearch.addListener(() {
+      setState(() => _searchQuery = txtSearch.text.trim());
+    });
     _fetchRestaurants();
+  }
+
+  @override
+  void dispose() {
+    txtSearch.dispose();
+    super.dispose();
   }
 
   void _fetchRestaurants() async {
@@ -41,7 +60,7 @@ class _MenuViewState extends State<MenuView> {
     await ServiceCall.get(
       "${SVKey.restaurantBaseUrl}/api/restaurants",
       queryParameters: params,
-      isToken: true,
+      isToken: Globs.udValueBool(Globs.userLogin),
       withSuccess: (responseObj) async {
         if (responseObj[KKey.statusCode] == 200) {
           final data = responseObj["data"] as Map<String, dynamic>? ?? {};
@@ -151,9 +170,9 @@ class _MenuViewState extends State<MenuView> {
                                     vertical: 30, horizontal: 20),
                                 physics: const NeverScrollableScrollPhysics(),
                                 shrinkWrap: true,
-                                itemCount: menuArr.length,
+                                itemCount: _filteredMenuArr.length,
                                 itemBuilder: ((context, index) {
-                                  var mObj = menuArr[index] as Map? ?? {};
+                                  var mObj = _filteredMenuArr[index] as Map? ?? {};
                                   return GestureDetector(
                                     onTap: () {
                                       Navigator.push(
@@ -230,6 +249,12 @@ class _MenuViewState extends State<MenuView> {
                                                 ],
                                               ),
                                             ),
+                                            FavoriteToggleBtn(
+                                              itemId: (mObj["id"] as num? ?? 0).toInt(),
+                                              itemType: "restaurant",
+                                              isFavorite: mObj["is_favorite"] == 1 || mObj["is_favorite"] == true,
+                                            ),
+                                            const SizedBox(width: 8),
                                             Container(
                                               width: 35,
                                               height: 35,

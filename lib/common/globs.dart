@@ -12,6 +12,7 @@ class Globs {
   static const userLogin = "user_login";
   static const userLat = "user_lat";
   static const userLng = "user_lng";
+  static const userAddress = "user_address";
   static const userProfile = "user_profile"; // to store cached profile
 
   static void showHUD({String status = "loading ....."}) async {

@@ -25,13 +25,8 @@ class _StarupViewState extends State<StartupView> {
   }
 
   void welcomePage() {
-    if (Globs.udValueBool(Globs.userLogin)) {
-      Navigator.push(context,
-          MaterialPageRoute(builder: (context) => const MainTabView()));
-    } else {
-      Navigator.push(context,
-          MaterialPageRoute(builder: (context) => const OnBoardingView()));
-    }
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => const MainTabView()));
   }
 
   @override

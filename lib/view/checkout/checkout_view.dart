@@ -3,7 +3,10 @@ import 'package:food_delivery/common/cart_provider.dart';
 import 'package:food_delivery/common/color_extension.dart';
 import 'package:food_delivery/common/globs.dart';
 import 'package:food_delivery/common/service_call.dart';
+import 'package:food_delivery/common_widget/auth_bottom_sheet.dart';
 import 'package:food_delivery/common_widget/round_button.dart';
+import 'package:food_delivery/view/more/change_address_view.dart';
+import 'package:food_delivery/view/order/order_tracking_view.dart';
 import 'package:provider/provider.dart';
 
 class CheckoutView extends StatefulWidget {
@@ -29,12 +32,23 @@ class _CheckoutViewState extends State<CheckoutView> {
   int selectedOrderTypeIndex = 0;
 
   // Address
+  String _addressLabel = '';
   final TextEditingController _streetController =
       TextEditingController(text: "");
   final TextEditingController _cityController =
       TextEditingController(text: "");
   final TextEditingController _zipController =
       TextEditingController(text: "");
+
+  @override
+  void initState() {
+    super.initState();
+    // Auto-fill address from the stored location
+    final address = Globs.udValueString(Globs.userAddress);
+    if (address.isNotEmpty) {
+      _streetController.text = address;
+    }
+  }
 
   @override
   void dispose() {
@@ -69,6 +83,12 @@ class _CheckoutViewState extends State<CheckoutView> {
   }
 
   void _placeOrder() async {
+    // Auth wall: show login bottom sheet if not logged in
+    if (!Globs.udValueBool(Globs.userLogin)) {
+      final loggedIn = await AuthBottomSheet.show(context);
+      if (!loggedIn || !mounted) return;
+    }
+
     final cart = context.read<CartProvider>();
     if (cart.items.isEmpty) return;
 
@@ -190,61 +210,27 @@ class _CheckoutViewState extends State<CheckoutView> {
         await cart.clearAllItems();
 
         if (!mounted) return;
-        // Show success
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (ctx) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+
+        // Navigate to live order tracking
+        final orderId = responseObj['data']?['orderId']?.toString() ?? '';
+        if (orderId.isNotEmpty) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (_) => OrderTrackingView(orderId: orderId),
             ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade50,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.check_circle,
-                      color: Colors.green, size: 50),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  'Order Placed!',
-                  style: TextStyle(
-                    color: TColor.primaryText,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Your order has been placed successfully.\nOrder ID: ${responseObj['data']?['orderId'] ?? 'N/A'}',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: TColor.secondaryText,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: RoundButton(
-                    title: 'Done',
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      // Pop back to menu/home
-                      Navigator.popUntil(context, (route) => route.isFirst);
-                    },
-                  ),
-                ),
-              ],
+            (route) => route.isFirst,
+          );
+        } else {
+          // Fallback if no orderId returned
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Order placed successfully!'),
+              backgroundColor: TColor.primary,
             ),
-          ),
-        );
+          );
+          Navigator.popUntil(context, (route) => route.isFirst);
+        }
       },
       failure: (err) async {
         if (!mounted) return;
@@ -363,12 +349,48 @@ class _CheckoutViewState extends State<CheckoutView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "Delivery Address",
-                      style: TextStyle(
-                        color: TColor.secondaryText,
-                        fontSize: 12,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          _addressLabel.isNotEmpty
+                              ? "Delivery Address ($_addressLabel)"
+                              : "Delivery Address",
+                          style: TextStyle(
+                            color: TColor.secondaryText,
+                            fontSize: 12,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            if (!Globs.udValueBool(Globs.userLogin)) {
+                              final loggedIn = await AuthBottomSheet.show(context);
+                              if (!loggedIn || !mounted) return;
+                            }
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const ChangeAddressView()),
+                            );
+                            if (result != null && result is Map) {
+                              setState(() {
+                                _addressLabel = result['label']?.toString() ?? '';
+                                _streetController.text = result['street']?.toString() ?? '';
+                                _cityController.text = result['city']?.toString() ?? '';
+                                _zipController.text = result['zipCode']?.toString() ?? '';
+                              });
+                            }
+                          },
+                          child: Text(
+                            "Select Saved Address",
+                            style: TextStyle(
+                              color: TColor.primary,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 10),
                     _buildAddressField(

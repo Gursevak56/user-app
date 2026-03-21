@@ -18,15 +18,38 @@ class MenuItemsView extends StatefulWidget {
 
 class _MenuItemsViewState extends State<MenuItemsView> {
   TextEditingController txtSearch = TextEditingController();
+  String _searchQuery = '';
 
   List menuCategoriesArr = [];
   Map restaurantInfo = {};
   bool isLoading = true;
 
+  /// Filter categories and their items by search query
+  List get _filteredCategories {
+    if (_searchQuery.isEmpty) return menuCategoriesArr;
+    return menuCategoriesArr.map((cat) {
+      final catMap = cat as Map? ?? {};
+      final items = (catMap['items'] as List? ?? []).where((item) {
+        final name = (item as Map?)?['name']?.toString().toLowerCase() ?? '';
+        return name.contains(_searchQuery.toLowerCase());
+      }).toList();
+      return {...catMap, 'items': items};
+    }).where((cat) => (cat['items'] as List).isNotEmpty).toList();
+  }
+
   @override
   void initState() {
     super.initState();
+    txtSearch.addListener(() {
+      setState(() => _searchQuery = txtSearch.text.trim());
+    });
     _fetchRestaurantMenu();
+  }
+
+  @override
+  void dispose() {
+    txtSearch.dispose();
+    super.dispose();
   }
 
   void _fetchRestaurantMenu() async {
@@ -48,7 +71,7 @@ class _MenuItemsViewState extends State<MenuItemsView> {
     await ServiceCall.get(
       "${SVKey.restaurantBaseUrl}/api/restaurants/$resId/menu",
       queryParameters: params,
-      isToken: true,
+      isToken: Globs.udValueBool(Globs.userLogin),
       withSuccess: (responseObj) async {
         if (responseObj[KKey.statusCode] == 200) {
           final data = responseObj["data"] as Map<String, dynamic>? ?? {};
@@ -142,9 +165,9 @@ class _MenuItemsViewState extends State<MenuItemsView> {
                           physics: const NeverScrollableScrollPhysics(),
                           shrinkWrap: true,
                           padding: const EdgeInsets.symmetric(horizontal: 8),
-                          itemCount: menuCategoriesArr.length,
+                          itemCount: _filteredCategories.length,
                           itemBuilder: ((context, catIndex) {
-                            var catObj = menuCategoriesArr[catIndex] as Map? ?? {};
+                            var catObj = _filteredCategories[catIndex] as Map? ?? {};
                             var catName = catObj["name"]?.toString() ?? "Items";
                             var items = catObj["items"] as List? ?? [];
                             

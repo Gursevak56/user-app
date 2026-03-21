@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../common/color_extension.dart';
+import '../common_widget/favorite_toggle_btn.dart';
 
 class MenuItemRow extends StatelessWidget {
   final Map mObj;
@@ -37,6 +38,15 @@ class MenuItemRow extends StatelessWidget {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                   ),
+                ),
+              ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: FavoriteToggleBtn(
+                  itemId: (mObj["id"] as num? ?? 0).toInt(),
+                  itemType: "dish",
+                  isFavorite: mObj["is_favorite"] == 1 || mObj["is_favorite"] == true,
                 ),
               ),
               Column(

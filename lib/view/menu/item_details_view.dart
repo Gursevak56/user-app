@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:food_delivery/common/cart_provider.dart';
+import 'package:food_delivery/common/globs.dart';
+import 'package:food_delivery/common_widget/auth_bottom_sheet.dart';
 import 'package:provider/provider.dart';
 
 import '../../common/color_extension.dart';
@@ -72,6 +74,12 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
   bool get _isVeg => widget.mObj['is_vegetarian'] == true;
 
   void _addToCart() async {
+    // Auth wall: show login bottom sheet if not logged in
+    if (!Globs.udValueBool(Globs.userLogin)) {
+      final loggedIn = await AuthBottomSheet.show(context);
+      if (!loggedIn || !mounted) return;
+    }
+
     final cart = context.read<CartProvider>();
     final dishId = (widget.mObj['id'] as num?)?.toInt() ?? 0;
     if (dishId == 0) return;

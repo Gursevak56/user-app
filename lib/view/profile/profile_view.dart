@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:food_delivery/common/service_call.dart';
+import 'package:food_delivery/common_widget/auth_bottom_sheet.dart';
 import 'package:food_delivery/common_widget/round_button.dart';
 import 'package:food_delivery/common/globs.dart';
 import 'package:image_picker/image_picker.dart';
@@ -32,7 +33,19 @@ class _ProfileViewState extends State<ProfileView> {
   @override
   void initState() {
     super.initState();
-    _fetchProfile();
+    // If not logged in, show auth sheet first
+    if (!Globs.udValueBool(Globs.userLogin)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final loggedIn = await AuthBottomSheet.show(context);
+        if (!loggedIn && mounted) {
+          Navigator.pop(context);
+          return;
+        }
+        if (mounted) _fetchProfile();
+      });
+    } else {
+      _fetchProfile();
+    }
   }
 
   void _fetchProfile() async {
@@ -227,7 +240,36 @@ class _ProfileViewState extends State<ProfileView> {
                     ),
                     TextButton(
                       onPressed: () {
-                        ServiceCall.logout();
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            title: Text('Sign Out',
+                                style: TextStyle(
+                                    color: TColor.primaryText,
+                                    fontWeight: FontWeight.w700)),
+                            content: const Text(
+                                'Are you sure you want to sign out?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                child: Text('Cancel',
+                                    style:
+                                        TextStyle(color: TColor.secondaryText)),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(ctx);
+                                  ServiceCall.logout();
+                                },
+                                child: const Text('Sign Out',
+                                    style: TextStyle(color: Colors.red)),
+                              ),
+                            ],
+                          ),
+                        );
                       },
                       child: Text(
                         "Sign Out",
@@ -270,6 +312,7 @@ class _ProfileViewState extends State<ProfileView> {
                         hintText: "Enter Mobile No",
                         controller: txtMobile,
                         keyboardType: TextInputType.phone,
+                        readOnly: true,
                       ),
                     ),
                     const SizedBox(height: 20),
