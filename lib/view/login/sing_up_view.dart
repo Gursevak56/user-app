@@ -10,6 +10,7 @@ import 'package:food_delivery/common_widget/round_button.dart';
 import 'package:food_delivery/common_widget/round_textfield.dart';
 import 'package:food_delivery/view/login/login_view.dart';
 import 'package:food_delivery/view/on_boarding/on_boarding_view.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class SignUpView extends StatefulWidget {
@@ -122,6 +123,7 @@ class _SignUpViewState extends State<SignUpView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: TColor.white,
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 25),
@@ -129,54 +131,112 @@ class _SignUpViewState extends State<SignUpView> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 64),
-              Text("Sign Up",
-                  style: TextStyle(
-                      color: TColor.primaryText,
-                      fontSize: 30,
-                      fontWeight: FontWeight.w800)),
-              Text("Add your details to sign up",
-                  style: TextStyle(
-                      color: TColor.secondaryText,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500)),
-              const SizedBox(height: 25),
-              RoundTextfield(hintText: "First Name", controller: txtFirstName),
-              const SizedBox(height: 16),
-              RoundTextfield(hintText: "Last Name", controller: txtLastName),
-              const SizedBox(height: 25),
+              // App icon
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: TColor.primaryLight,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Icon(
+                  Icons.person_add_alt_1_rounded,
+                  size: 36,
+                  color: TColor.primary,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                "Sign Up",
+                style: GoogleFonts.plusJakartaSans(
+                  color: TColor.primaryText,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                "Add your details to sign up",
+                style: GoogleFonts.plusJakartaSans(
+                  color: TColor.secondaryText,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 28),
               RoundTextfield(
-                  hintText: "Email",
-                  controller: txtEmail,
-                  keyboardType: TextInputType.emailAddress),
-              const SizedBox(height: 25),
+                hintText: "First Name",
+                controller: txtFirstName,
+                left: Icon(Icons.person_outline_rounded,
+                    color: TColor.placeholder, size: 20),
+              ),
+              const SizedBox(height: 14),
               RoundTextfield(
-                  hintText: "Mobile No",
-                  controller: txtMobile,
-                  keyboardType: TextInputType.phone),
-              const SizedBox(height: 25),
-              RoundTextfield(hintText: "Address", controller: txtAddress),
-              const SizedBox(height: 25),
+                hintText: "Last Name",
+                controller: txtLastName,
+                left: Icon(Icons.person_outline_rounded,
+                    color: TColor.placeholder, size: 20),
+              ),
+              const SizedBox(height: 14),
               RoundTextfield(
-                  hintText: "Password",
-                  controller: txtPassword,
-                  obscureText: true),
-              const SizedBox(height: 25),
+                hintText: "Email",
+                controller: txtEmail,
+                keyboardType: TextInputType.emailAddress,
+                left: Icon(Icons.email_outlined,
+                    color: TColor.placeholder, size: 20),
+              ),
+              const SizedBox(height: 14),
               RoundTextfield(
-                  hintText: "Confirm Password",
-                  controller: txtConfirmPassword,
-                  obscureText: true),
-              const SizedBox(height: 25),
-              Text("User Type: customer",
-                  style: TextStyle(
-                      color: TColor.secondaryText,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500)),
-              const SizedBox(height: 25),
+                hintText: "Mobile No",
+                controller: txtMobile,
+                keyboardType: TextInputType.phone,
+                left: Icon(Icons.phone_outlined,
+                    color: TColor.placeholder, size: 20),
+              ),
+              const SizedBox(height: 14),
+              RoundTextfield(
+                hintText: "Address",
+                controller: txtAddress,
+                left: Icon(Icons.location_on_outlined,
+                    color: TColor.placeholder, size: 20),
+              ),
+              const SizedBox(height: 14),
+              RoundTextfield(
+                hintText: "Password",
+                controller: txtPassword,
+                obscureText: true,
+                left: Icon(Icons.lock_outline_rounded,
+                    color: TColor.placeholder, size: 20),
+              ),
+              const SizedBox(height: 14),
+              RoundTextfield(
+                hintText: "Confirm Password",
+                controller: txtConfirmPassword,
+                obscureText: true,
+                left: Icon(Icons.lock_outline_rounded,
+                    color: TColor.placeholder, size: 20),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: TColor.primaryLight,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  "User Type: Customer",
+                  style: GoogleFonts.plusJakartaSans(
+                    color: TColor.primary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
               RoundButton(
                 title: "Sign Up",
                 onPressed: () => {btnSignUp()},
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 24),
               TextButton(
                 onPressed: () {
                   Navigator.pushReplacement(
@@ -184,23 +244,26 @@ class _SignUpViewState extends State<SignUpView> {
                     MaterialPageRoute(builder: (_) => const LoginView()),
                   );
                 },
-                child: RichText(
-                  text: TextSpan(
-                    children: [
-                      TextSpan(
-                          text: "Already have an Account? ",
-                          style: TextStyle(
-                              color: TColor.secondaryText,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500)),
-                      TextSpan(
-                          text: "Login",
-                          style: TextStyle(
-                              color: TColor.primary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700)),
-                    ],
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "Already have an Account? ",
+                      style: GoogleFonts.plusJakartaSans(
+                        color: TColor.secondaryText,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Text(
+                      "Login",
+                      style: GoogleFonts.plusJakartaSans(
+                        color: TColor.primary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

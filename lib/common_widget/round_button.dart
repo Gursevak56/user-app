@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../common/color_extension.dart';
 
@@ -19,39 +20,50 @@ class RoundButton extends StatelessWidget {
     required this.title,
     required this.onPressed,
     this.fontSize = 16,
-    this.height = 55,
+    this.height = 54,
     this.width = double.infinity,
     this.type = RoundButtonType.bgPrimary,
-    this.borderRadius = const BorderRadius.all(Radius.circular(30)),
+    this.borderRadius = const BorderRadius.all(Radius.circular(14)),
     this.gradient = TColor.foodTabGradient,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onPressed,
-      child: Container(
-        height: height,
-        width: width,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-            border: type == RoundButtonType.bgPrimary
-                ? null
-                : Border.all(color: TColor.primary, width: 1),
-            gradient: type == RoundButtonType.bgPrimary
-                ? gradient
-                : TColor.whiteGradient,
+    final isPrimary = type == RoundButtonType.bgPrimary;
+    return Material(
+      color: Colors.transparent,
+      borderRadius: borderRadius,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: borderRadius as BorderRadius?,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          height: height,
+          width: width,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: isPrimary ? TColor.primary : TColor.white,
             borderRadius: borderRadius,
-            
+            border: isPrimary
+                ? null
+                : Border.all(color: TColor.primary, width: 1.5),
+            boxShadow: isPrimary
+                ? [
+                    BoxShadow(
+                      color: TColor.primary.withOpacity(0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Text(
+            title,
+            style: GoogleFonts.plusJakartaSans(
+              color: isPrimary ? TColor.white : TColor.primary,
+              fontSize: fontSize,
+              fontWeight: FontWeight.w700,
             ),
-        child: Text(
-          title,
-          style: TextStyle(
-            color: type == RoundButtonType.bgPrimary
-                ? TColor.white
-                : TColor.primary,
-            fontSize: fontSize,
-            fontWeight: FontWeight.w600,
           ),
         ),
       ),

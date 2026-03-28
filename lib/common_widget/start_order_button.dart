@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../common/color_extension.dart';
 
 class StartOrderButton extends StatelessWidget {
@@ -13,27 +14,41 @@ class StartOrderButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onPressed,
-      child: Container(
-        height: 55,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-            gradient: gradient,
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(50),
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(50),
+        child: Container(
+          height: 50,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: TColor.primary,
             borderRadius: BorderRadius.circular(50),
             boxShadow: [
               BoxShadow(
-                color: TColor.primary.withOpacity(0.3),
-                blurRadius: 8,
+                color: TColor.primary.withOpacity(0.35),
+                blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
-            ]),
-        child: Text(
-          "Start Order",
-          style: TextStyle(
-            color: TColor.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.receipt_long_rounded,
+                  color: Colors.white, size: 18),
+              const SizedBox(width: 8),
+              Text(
+                "My Orders",
+                style: GoogleFonts.plusJakartaSans(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
           ),
         ),
       ),

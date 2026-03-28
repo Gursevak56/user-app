@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../common/color_extension.dart';
 
@@ -25,7 +26,8 @@ class RoundTextfield extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: bgColor ?? TColor.textfield,
-        borderRadius: BorderRadius.circular(25),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: TColor.border, width: 1),
       ),
       child: Row(
         children: [
@@ -37,15 +39,22 @@ class RoundTextfield extends StatelessWidget {
               controller: controller,
               obscureText: obscureText,
               keyboardType: keyboardType,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 15,
+                color: TColor.primaryText,
+              ),
               decoration: InputDecoration(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
                 enabledBorder: InputBorder.none,
                 focusedBorder: InputBorder.none,
                 hintText: hintText,
-                hintStyle: TextStyle(
-                  color: TColor.secondaryText,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+                hintStyle: GoogleFonts.plusJakartaSans(
+                  color: TColor.placeholder,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
             ),
@@ -81,10 +90,11 @@ class RoundTitleTextfield extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 55,
+      height: 56,
       decoration: BoxDecoration(
         color: bgColor ?? TColor.textfield,
-        borderRadius: BorderRadius.circular(25),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: TColor.border, width: 1),
       ),
       child: Row(
         children: [
@@ -94,7 +104,7 @@ class RoundTitleTextfield extends StatelessWidget {
             child: Stack(
               children: [
                 Container(
-                  height: 55,
+                  height: 56,
                   margin: const EdgeInsets.only(top: 8),
                   alignment: Alignment.topLeft,
                   child: TextField(
@@ -103,28 +113,36 @@ class RoundTitleTextfield extends StatelessWidget {
                     obscureText: obscureText,
                     keyboardType: keyboardType,
                     readOnly: readOnly,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 14,
+                      color: TColor.primaryText,
+                    ),
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 20,
+                        horizontal: 16,
                       ),
                       enabledBorder: InputBorder.none,
                       focusedBorder: InputBorder.none,
                       hintText: hintText,
-                      hintStyle: TextStyle(
+                      hintStyle: GoogleFonts.plusJakartaSans(
                         color: TColor.placeholder,
                         fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
                   ),
                 ),
                 Container(
-                  height: 55,
-                  margin: const EdgeInsets.only(top: 10, left: 20),
+                  height: 56,
+                  margin: const EdgeInsets.only(top: 10, left: 16),
                   alignment: Alignment.topLeft,
                   child: Text(
                     title,
-                    style: TextStyle(color: TColor.placeholder, fontSize: 11),
+                    style: GoogleFonts.plusJakartaSans(
+                      color: TColor.secondaryText,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:food_delivery/common/color_extension.dart';
 import 'package:food_delivery/common_widget/on_boarding_button.dart';
 import 'package:food_delivery/view/main_tabview/main_tabview.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class OnBoardingView extends StatefulWidget {
   const OnBoardingView({super.key});
@@ -36,9 +37,7 @@ class _OnBoardingViewState extends State<OnBoardingView> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-
     controller.addListener(() {
       setState(() {
         selectPage = controller.page?.round() ?? 0;
@@ -52,12 +51,14 @@ class _OnBoardingViewState extends State<OnBoardingView> {
     return Scaffold(
       body: Stack(
         children: [
+          // Background gradient
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                  colors: TColor.primaryGradient,
-                  begin: Alignment.centerRight,
-                  end: Alignment.bottomLeft),
+                colors: TColor.primaryGradient,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
           ),
           Column(
@@ -68,55 +69,58 @@ class _OnBoardingViewState extends State<OnBoardingView> {
                     height: media.height * 0.8,
                     child: Container(
                       decoration: const BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.only(
-                              bottomLeft: Radius.circular(50),
-                              bottomRight: Radius.circular(50))),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(40),
+                          bottomRight: Radius.circular(40),
+                        ),
+                      ),
                       child: PageView.builder(
                         controller: controller,
                         itemCount: pageArr.length,
                         itemBuilder: (context, index) {
                           final pObj = pageArr[index];
                           return Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 25),
-                              child: Column(children: [
-                                SizedBox(
-                                  height: media.width * 0.2,
-                                ),
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 30),
+                            child: Column(
+                              children: [
+                                SizedBox(height: media.width * 0.2),
                                 Image.asset(
                                   pObj["image"].toString(),
                                   width: media.width * 0.65,
                                   height: media.width * 0.8,
                                   fit: BoxFit.contain,
                                 ),
-                                SizedBox(
-                                  height: media.width * 0.2,
-                                ),
+                                SizedBox(height: media.width * 0.15),
                                 Text(
                                   pObj["title"].toString(),
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      color: TColor.primaryText,
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.w800),
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: TColor.primaryText,
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w800,
+                                  ),
                                 ),
-                                SizedBox(
-                                  height: media.width * 0.05,
-                                ),
+                                SizedBox(height: media.width * 0.04),
                                 Text(
                                   pObj["subtitle"].toString(),
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      color: TColor.secondaryText,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500),
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: TColor.secondaryText,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.5,
+                                  ),
                                 ),
-                              ]));
+                              ],
+                            ),
+                          );
                         },
                       ),
                     ),
                   ),
+                  // Page indicators
                   Positioned(
                     top: media.height * 0.50,
                     left: 0,
@@ -125,43 +129,30 @@ class _OnBoardingViewState extends State<OnBoardingView> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: pageArr.map((e) {
                         var index = pageArr.indexOf(e);
-
                         bool isActive = index == selectPage;
 
-                        return Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 2),
-                            height: 20,
-                            width: 20,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: isActive
-                                    ? TColor.primary
-                                    : Colors.transparent,
-                                width: 3,
-                              ),
-                            ),
-                            child: Center(
-                              child: Container(
-                                height: 8,
-                                width: 8,
-                                decoration: BoxDecoration(
-                                  color: isActive
-                                      ? TColor.primary
-                                      : TColor.placeholder,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                            ));
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          height: 8,
+                          width: isActive ? 28 : 8,
+                          decoration: BoxDecoration(
+                            color: isActive
+                                ? TColor.primary
+                                : TColor.placeholder.withOpacity(0.4),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        );
                       }).toList(),
                     ),
                   ),
                 ],
               ),
+              // Bottom buttons
               Expanded(
                 child: selectPage != 2
                     ? Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -170,7 +161,8 @@ class _OnBoardingViewState extends State<OnBoardingView> {
                                 if (selectPage < 2) {
                                   controller.animateToPage(
                                     selectPage + 1,
-                                    duration: const Duration(milliseconds: 500),
+                                    duration:
+                                        const Duration(milliseconds: 400),
                                     curve: Curves.easeInOut,
                                   );
                                 }
@@ -181,7 +173,7 @@ class _OnBoardingViewState extends State<OnBoardingView> {
                               onPressed: () {
                                 controller.animateToPage(
                                   2,
-                                  duration: const Duration(milliseconds: 500),
+                                  duration: const Duration(milliseconds: 400),
                                   curve: Curves.easeInOut,
                                 );
                               },
@@ -200,7 +192,7 @@ class _OnBoardingViewState extends State<OnBoardingView> {
                               ),
                             );
                           },
-                          title: "Done",
+                          title: "Get Started",
                         ),
                       ),
               )

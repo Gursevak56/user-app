@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../common/color_extension.dart';
 
@@ -14,7 +15,7 @@ class ViewAllTitleRow extends StatelessWidget {
       children: [
         Text(
           title,
-          style: TextStyle(
+          style: GoogleFonts.plusJakartaSans(
             color: TColor.primaryText,
             fontSize: 20,
             fontWeight: FontWeight.w700,
@@ -22,13 +23,25 @@ class ViewAllTitleRow extends StatelessWidget {
         ),
         TextButton(
           onPressed: onView,
-          child: Text(
-            "See all",
-            style: TextStyle(
-              color: TColor.primary,
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-            ),
+          style: TextButton.styleFrom(
+            foregroundColor: TColor.primary,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "See all",
+                style: GoogleFonts.plusJakartaSans(
+                  color: TColor.primary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 2),
+              Icon(Icons.arrow_forward_ios_rounded,
+                  size: 12, color: TColor.primary),
+            ],
           ),
         ),
       ],
@@ -53,13 +66,11 @@ class SeeAllIconTitleRow extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(icon),
-            const SizedBox(
-              width: 8,
-            ),
+            Icon(icon, color: TColor.primary, size: 22),
+            const SizedBox(width: 8),
             Text(
               title,
-              style: TextStyle(
+              style: GoogleFonts.plusJakartaSans(
                 color: TColor.primaryText,
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -69,12 +80,15 @@ class SeeAllIconTitleRow extends StatelessWidget {
         ),
         TextButton(
           onPressed: onView,
+          style: TextButton.styleFrom(
+            foregroundColor: TColor.primary,
+          ),
           child: Text(
             "See all",
-            style: TextStyle(
+            style: GoogleFonts.plusJakartaSans(
               color: TColor.primary,
               fontSize: 13,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -87,7 +101,11 @@ class IconTitleRow extends StatelessWidget {
   final String title;
   final VoidCallback onView;
   final IconData icon;
-  const IconTitleRow({super.key, required this.title, required this.onView, required this.icon});
+  const IconTitleRow(
+      {super.key,
+      required this.title,
+      required this.onView,
+      required this.icon});
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +114,7 @@ class IconTitleRow extends StatelessWidget {
       children: [
         Text(
           title,
-          style: TextStyle(
+          style: GoogleFonts.plusJakartaSans(
             color: TColor.primaryText,
             fontSize: 20,
             fontWeight: FontWeight.w800,
@@ -107,7 +125,7 @@ class IconTitleRow extends StatelessWidget {
           icon: Icon(icon),
           iconSize: 24,
           color: TColor.primaryText,
-          )
+        )
       ],
     );
   }

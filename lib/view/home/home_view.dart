@@ -9,6 +9,7 @@ import 'package:food_delivery/view/home/home_grocery_tab_view.dart';
 import 'package:food_delivery/view/notifications/notifications_view.dart';
 import '../more/my_order_view.dart';
 import 'package:food_delivery/common/globs.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -41,11 +42,6 @@ class _HomeViewState extends State<HomeView>
 
   void _fetchLocationAndData() async {
     await LocationService.fetchAndSaveCurrentLocation();
-    // After location is saved to Globs, you might want to force HomeFoodTabView to reload
-    // but typically it handles its own state or we can just let it fetch whenever ready.
-    // For a simple trigger, a rebuild of HomeView can work if tabs depend on it, 
-    // though HomeFoodTabView has already called its API.
-    // A more robust way is using a stream or provider, but giving it a simple rebuild is a start.
     if (mounted) {
       setState(() {}); // Optionally rebuild if we show location name
     }
@@ -59,11 +55,10 @@ class _HomeViewState extends State<HomeView>
 
   @override
   Widget build(BuildContext context) {
-    // decide gradient + hint based on tab
     final isFoodTab = _tabController.index == 0;
 
     return Scaffold(
-      backgroundColor: TColor.white,
+      backgroundColor: TColor.background,
       appBar: AppBar(
         backgroundColor: TColor.white,
         scrolledUnderElevation: 0,
@@ -71,127 +66,130 @@ class _HomeViewState extends State<HomeView>
         automaticallyImplyLeading: false,
         title: Row(
           children: [
-            const Icon(Icons.location_on_sharp),
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: TColor.primaryLight,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(Icons.location_on_rounded,
+                  color: TColor.primary, size: 20),
+            ),
+            const SizedBox(width: 10),
             Expanded(
-              child: Text(
-                Globs.udValueString(Globs.userAddress).isNotEmpty 
-                    ? Globs.udValueString(Globs.userAddress)
-                    : "Fetching location...",
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Delivering to",
+                    style: GoogleFonts.plusJakartaSans(
+                      color: TColor.secondaryText,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    Globs.udValueString(Globs.userAddress).isNotEmpty 
+                        ? Globs.udValueString(Globs.userAddress)
+                        : "Fetching location...",
+                    style: GoogleFonts.plusJakartaSans(
+                      color: TColor.primaryText,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
             ),
           ],
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: Row(
+          IconButton(
+            onPressed: () {
+              if (Globs.udValueBool(Globs.userLogin)) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const NotificationsView(),
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Please login to see notifications")),
+                );
+              }
+            },
+            icon: Stack(
               children: [
-                IconButton(
-                  onPressed: () {
-                    if (Globs.udValueBool(Globs.userLogin)) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const NotificationsView(),
-                        ),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Please login to see notifications")),
-                      );
-                    }
-                  },
-                  icon: Icon(
-                    Icons.notifications,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: TColor.textfield,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.notifications_outlined,
                     color: TColor.primaryText,
-                    size: 24,
+                    size: 22,
                   ),
                 ),
-                const SizedBox(
-                  height: 34,
-                  child: CircleAvatar(
-                    backgroundImage: AssetImage("assets/img/profile.png"),
-                  ),
-                )
               ],
             ),
           ),
+          const SizedBox(width: 8),
         ],
       ),
       body: Stack(
         children: [
           Column(
             children: [
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                child: Row(
-                  children: [
-                    Container(
-                        height: 50,
-                        width: 50,
-                        decoration: BoxDecoration(
-                          color: TColor.textfield,
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        child: IconButton(
-                            onPressed: () {},
-                            icon: Image.asset(
-                              "assets/img/tab_home.png",
-                              color: const Color(0xFF1F2937),
-                              height: 20,
-                              width: 20,
-                            ))),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: SegmentedTabControl(
-                        controller: _tabController,
-                        barDecoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(50),
-                          color: TColor.textfield,
-                        ),
-                        textStyle: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 18),
-                        height: 50,
-                        tabTextColor: TColor.secondaryText,
-                        selectedTabTextColor: Colors.white,
-                        squeezeIntensity: 2,
-                        indicatorPadding: const EdgeInsets.all(4),
-                        indicatorDecoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        tabs: const [
-                          SegmentTab(
-                            label: 'Food',
-                            gradient: TColor.foodTabGradient,
-                          ),
-                          SegmentTab(
-                            label: 'Grocery',
-                            gradient: TColor.groceryTabGradient,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+              // Tab switcher area
+              Container(
+                color: TColor.white,
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Tab control
+                    SegmentedTabControl(
+                      controller: _tabController,
+                      barDecoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(14),
+                        color: TColor.textfield,
+                      ),
+                      textStyle: GoogleFonts.plusJakartaSans(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                      ),
+                      height: 48,
+                      tabTextColor: TColor.secondaryText,
+                      selectedTabTextColor: Colors.white,
+                      squeezeIntensity: 2,
+                      indicatorPadding: const EdgeInsets.all(4),
+                      indicatorDecoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      tabs: const [
+                        SegmentTab(
+                          label: 'Food',
+                          gradient: TColor.foodTabGradient,
+                        ),
+                        SegmentTab(
+                          label: 'Grocery',
+                          gradient: TColor.groceryTabGradient,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    // Search bar
                     RoundTextfield(
                       hintText: isFoodTab
                           ? "Search for dishes or restaurants"
                           : "Search for products",
                       controller: txtSearch,
+                      left: Icon(Icons.search_rounded,
+                          color: TColor.placeholder, size: 22),
                     ),
                   ],
                 ),
@@ -209,13 +207,9 @@ class _HomeViewState extends State<HomeView>
             alignment: Alignment.bottomCenter,
             child: Padding(
               padding: const EdgeInsets.only(bottom: 16),
-              child: Container(
-                width: 190,
-                height: 50,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(50),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SizedBox(
+                width: 170,
+                height: 48,
                 child: InkWell(
                   onTap: () {
                     Navigator.push(

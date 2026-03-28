@@ -6,6 +6,7 @@ import 'package:food_delivery/common/service_call.dart';
 import 'package:food_delivery/common_widget/auth_bottom_sheet.dart';
 import 'package:food_delivery/common_widget/round_button.dart';
 import 'package:food_delivery/common/globs.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../common/color_extension.dart';
@@ -83,7 +84,9 @@ class _ProfileViewState extends State<ProfileView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(err.toString()),
-            backgroundColor: Colors.red,
+            backgroundColor: TColor.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       },
@@ -94,7 +97,12 @@ class _ProfileViewState extends State<ProfileView> {
     // Validate inputs
     if (txtFirstName.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("First name is required"), backgroundColor: Colors.red),
+        SnackBar(
+          content: const Text("First name is required"),
+          backgroundColor: TColor.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
       );
       return;
     }
@@ -106,7 +114,6 @@ class _ProfileViewState extends State<ProfileView> {
       "last_name": txtLastName.text.trim(),
       "email": txtEmail.text.trim(),
       "phone": txtMobile.text.trim(),
-      // Retain existing image url if no new one is uploaded (image uploading not implemented yet in this snippet)
       "profile_image_url": profileImageUrl ?? "",
     };
 
@@ -119,9 +126,17 @@ class _ProfileViewState extends State<ProfileView> {
         if (!mounted) return;
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Profile updated successfully"),
-            backgroundColor: Colors.green,
+          SnackBar(
+            content: Row(
+              children: const [
+                Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+                SizedBox(width: 8),
+                Text("Profile updated successfully"),
+              ],
+            ),
+            backgroundColor: TColor.success,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       },
@@ -132,7 +147,9 @@ class _ProfileViewState extends State<ProfileView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(err.toString()),
-            backgroundColor: Colors.red,
+            backgroundColor: TColor.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       },
@@ -158,19 +175,22 @@ class _ProfileViewState extends State<ProfileView> {
           width: 100,
           height: 100,
           fit: BoxFit.cover,
-          placeholder: (context, url) => const CircularProgressIndicator(),
+          placeholder: (context, url) => CircularProgressIndicator(
+            color: TColor.primary,
+            strokeWidth: 2.5,
+          ),
           errorWidget: (context, url, error) => Icon(
-            Icons.person,
-            size: 65,
-            color: TColor.secondaryText,
+            Icons.person_rounded,
+            size: 50,
+            color: TColor.primary.withOpacity(0.5),
           ),
         ),
       );
     } else {
       return Icon(
-        Icons.person,
-        size: 65,
-        color: TColor.secondaryText,
+        Icons.person_rounded,
+        size: 50,
+        color: TColor.primary.withOpacity(0.5),
       );
     }
   }
@@ -178,20 +198,18 @@ class _ProfileViewState extends State<ProfileView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: TColor.white,
+      backgroundColor: TColor.background,
       appBar: AppBar(
         backgroundColor: TColor.white,
         scrolledUnderElevation: 0,
         elevation: 0,
         leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: Image.asset("assets/img/btn_back.png", width: 20, height: 20),
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
         ),
         title: Text(
           "Profile",
-          style: TextStyle(
+          style: GoogleFonts.plusJakartaSans(
             color: TColor.primaryText,
             fontSize: 20,
             fontWeight: FontWeight.w800,
@@ -199,130 +217,185 @@ class _ProfileViewState extends State<ProfileView> {
         ),
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(
+              child: CircularProgressIndicator(
+                color: TColor.primary,
+                strokeWidth: 2.5,
+              ),
+            )
           : SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: TColor.placeholder,
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                      alignment: Alignment.center,
-                      child: _buildProfileImage(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 20),
+                  // Profile header card
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: TColor.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 12,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    TextButton.icon(
-                      onPressed: () async {
-                        image = await picker.pickImage(source: ImageSource.gallery);
-                        setState(() {});
-                      },
-                      icon: Icon(
-                        Icons.edit,
-                        color: TColor.primary,
-                        size: 12,
-                      ),
-                      label: Text(
-                        "Edit Profile Image",
-                        style: TextStyle(color: TColor.secondary, fontSize: 12),
-                      ),
-                    ),
-                    Text(
-                      txtFirstName.text.isNotEmpty ? "Hi there ${txtFirstName.text}!" : "Hi there!",
-                      style: TextStyle(
-                          color: TColor.primaryText,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (ctx) => AlertDialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            title: Text('Sign Out',
-                                style: TextStyle(
-                                    color: TColor.primaryText,
-                                    fontWeight: FontWeight.w700)),
-                            content: const Text(
-                                'Are you sure you want to sign out?'),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx),
-                                child: Text('Cancel',
-                                    style:
-                                        TextStyle(color: TColor.secondaryText)),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pop(ctx);
-                                  ServiceCall.logout();
-                                },
-                                child: const Text('Sign Out',
-                                    style: TextStyle(color: Colors.red)),
-                              ),
-                            ],
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            color: TColor.primaryLight,
+                            borderRadius: BorderRadius.circular(50),
                           ),
-                        );
-                      },
-                      child: Text(
-                        "Sign Out",
-                        style: TextStyle(
-                            color: TColor.secondaryText,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500),
-                      ),
+                          alignment: Alignment.center,
+                          child: _buildProfileImage(),
+                        ),
+                        const SizedBox(height: 8),
+                        TextButton.icon(
+                          onPressed: () async {
+                            image = await picker.pickImage(
+                                source: ImageSource.gallery);
+                            setState(() {});
+                          },
+                          icon: Icon(Icons.camera_alt_rounded,
+                              color: TColor.primary, size: 16),
+                          label: Text(
+                            "Change Photo",
+                            style: GoogleFonts.plusJakartaSans(
+                              color: TColor.primary,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          txtFirstName.text.isNotEmpty
+                              ? "Hi there ${txtFirstName.text}!"
+                              : "Hi there!",
+                          style: GoogleFonts.plusJakartaSans(
+                            color: TColor.primaryText,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        TextButton(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                title: Text('Sign Out',
+                                    style: GoogleFonts.plusJakartaSans(
+                                        color: TColor.primaryText,
+                                        fontWeight: FontWeight.w700)),
+                                content: Text(
+                                    'Are you sure you want to sign out?',
+                                    style: GoogleFonts.plusJakartaSans()),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx),
+                                    child: Text('Cancel',
+                                        style: TextStyle(
+                                            color: TColor.secondaryText)),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(ctx);
+                                      ServiceCall.logout();
+                                    },
+                                    child: Text('Sign Out',
+                                        style: TextStyle(
+                                            color: TColor.primary)),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                          child: Text(
+                            "Sign Out",
+                            style: GoogleFonts.plusJakartaSans(
+                              color: TColor.secondaryText,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
-                      child: RoundTitleTextfield(
-                        title: "First Name",
-                        hintText: "Enter First Name",
-                        controller: txtFirstName,
-                      ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Form card
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: TColor.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 12,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
-                      child: RoundTitleTextfield(
-                        title: "Last Name",
-                        hintText: "Enter Last Name",
-                        controller: txtLastName,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Personal Information",
+                          style: GoogleFonts.plusJakartaSans(
+                            color: TColor.primaryText,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        RoundTitleTextfield(
+                          title: "First Name",
+                          hintText: "Enter First Name",
+                          controller: txtFirstName,
+                        ),
+                        const SizedBox(height: 12),
+                        RoundTitleTextfield(
+                          title: "Last Name",
+                          hintText: "Enter Last Name",
+                          controller: txtLastName,
+                        ),
+                        const SizedBox(height: 12),
+                        RoundTitleTextfield(
+                          title: "Email",
+                          hintText: "Enter Email",
+                          keyboardType: TextInputType.emailAddress,
+                          controller: txtEmail,
+                        ),
+                        const SizedBox(height: 12),
+                        RoundTitleTextfield(
+                          title: "Mobile No",
+                          hintText: "Enter Mobile No",
+                          controller: txtMobile,
+                          keyboardType: TextInputType.phone,
+                          readOnly: true,
+                        ),
+                        const SizedBox(height: 24),
+                        RoundButton(title: "Save", onPressed: _updateProfile),
+                      ],
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
-                      child: RoundTitleTextfield(
-                        title: "Email",
-                        hintText: "Enter Email",
-                        keyboardType: TextInputType.emailAddress,
-                        controller: txtEmail,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
-                      child: RoundTitleTextfield(
-                        title: "Mobile No",
-                        hintText: "Enter Mobile No",
-                        controller: txtMobile,
-                        keyboardType: TextInputType.phone,
-                        readOnly: true,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: RoundButton(title: "Save", onPressed: _updateProfile),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-                ),
+                  ),
+
+                  const SizedBox(height: 30),
+                ],
               ),
             ),
     );

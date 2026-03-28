@@ -106,98 +106,110 @@ class _HomeFoodTabViewState extends State<HomeFoodTabView> {
     return Column(
       children: [
         const SizedBox(height: 16),
+        // ─── Banner Card ───
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Container(
             width: double.infinity,
-            height: 130,
+            height: 140,
             decoration: BoxDecoration(
-              color: const Color(0xFFFFF9E6),
-              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                colors: [TColor.primary, TColor.primaryDark],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(18),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  offset: const Offset(0, 2),
-                  spreadRadius: 2,
-                  blurRadius: 2,
-                )
+                  color: TColor.primary.withOpacity(0.3),
+                  offset: const Offset(0, 4),
+                  blurRadius: 16,
+                ),
               ],
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 16.0, top: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        bannersArr.isNotEmpty ? bannersArr[0]['title'] ?? "Special Offer" : "Flat ₹100 off",
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: TColor.primaryText,
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          bannersArr.isNotEmpty
+                              ? bannersArr[0]['title'] ?? "Special Offer"
+                              : "Flat ₹100 off",
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
-                      Text(
-                        bannersArr.isNotEmpty ? bannersArr[0]['subtitle'] ?? "Grab it now" : "on first food order",
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          color: TColor.primaryText,
+                        const SizedBox(height: 4),
+                        Text(
+                          bannersArr.isNotEmpty
+                              ? bannersArr[0]['subtitle'] ?? "Grab it now"
+                              : "on first food order",
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.white.withOpacity(0.85),
+                          ),
                         ),
-                      ),
-                      const SizedBox(
-                        height: 12,
-                      ),
-                      Container(
-                        height: 40,
-                        width: 110,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(50),
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            "Grab Offer",
+                            style: GoogleFonts.plusJakartaSans(
+                              color: TColor.primary,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ),
-                        child: RoundButton(
-                          title: "Grab Offer",
-                          onPressed: () {},
-                          fontSize: 14,
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
                 if (bannersArr.isNotEmpty && bannersArr[0]['image_url'] != null)
-                  Expanded(
-                    child: ClipRRect(
-                      borderRadius: const BorderRadius.only(
-                        topRight: Radius.circular(20),
-                        bottomRight: Radius.circular(20),
-                      ),
-                      child: CachedNetworkImage(
-                        imageUrl: bannersArr[0]['image_url'],
-                        fit: BoxFit.cover,
-                        height: double.infinity,
-                      ),
+                  ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      topRight: Radius.circular(18),
+                      bottomRight: Radius.circular(18),
+                    ),
+                    child: CachedNetworkImage(
+                      imageUrl: bannersArr[0]['image_url'],
+                      fit: BoxFit.cover,
+                      width: 130,
+                      height: double.infinity,
                     ),
                   )
                 else
-                  ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                      topRight: Radius.circular(20),
-                      bottomRight: Radius.circular(20),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: Icon(
+                      Icons.local_offer_rounded,
+                      size: 60,
+                      color: Colors.white.withOpacity(0.3),
                     ),
-                    child: Image.asset(
-                      "assets/img/food_promotion_banner.png",
-                    ),
-                  )
+                  ),
               ],
             ),
           ),
         ),
+
+        // ─── Recent Orders ───
         if (Globs.udValueBool(Globs.userLogin)) ...[
-          const SizedBox(height: 12),
+          const SizedBox(height: 20),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: ViewAllTitleRow(
               title: "Recent Orders",
               onView: () {
@@ -208,15 +220,33 @@ class _HomeFoodTabViewState extends State<HomeFoodTabView> {
               },
             ),
           ),
+          const SizedBox(height: 8),
           SizedBox(
-            height: 88,
+            height: 80,
             child: isLoadingRecent
-                ? const Center(child: CircularProgressIndicator())
+                ? Center(
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: TColor.primary,
+                      ),
+                    ),
+                  )
                 : foodRecentOrderArr.isEmpty
-                    ? const Center(child: Text("No recent orders found"))
+                    ? Center(
+                        child: Text(
+                          "No recent orders yet",
+                          style: GoogleFonts.plusJakartaSans(
+                            color: TColor.secondaryText,
+                            fontSize: 13,
+                          ),
+                        ),
+                      )
                     : ListView.builder(
                         scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
                         itemCount: foodRecentOrderArr.length,
                         itemBuilder: ((context, index) {
                           var fRObj = foodRecentOrderArr[index] as Map? ?? {};
@@ -232,13 +262,12 @@ class _HomeFoodTabViewState extends State<HomeFoodTabView> {
                         }),
                       ),
           ),
-          const SizedBox(height: 12),
         ],
+
+        // ─── Categories ───
+        const SizedBox(height: 20),
         Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: ViewAllTitleRow(
             title: "Categories",
             onView: () {
@@ -251,17 +280,31 @@ class _HomeFoodTabViewState extends State<HomeFoodTabView> {
             },
           ),
         ),
+        const SizedBox(height: 8),
         SizedBox(
           height: 240,
           child: isLoading 
-              ? const Center(child: CircularProgressIndicator()) 
+              ? Center(
+                  child: CircularProgressIndicator(
+                    color: TColor.primary,
+                    strokeWidth: 2.5,
+                  ),
+                )
               : foodCatArr.isEmpty 
-                  ? const Center(child: Text("No categories available"))
+                  ? Center(
+                      child: Text(
+                        "No categories available",
+                        style: GoogleFonts.plusJakartaSans(
+                          color: TColor.secondaryText,
+                          fontSize: 13,
+                        ),
+                      ),
+                    )
                   : GridView.builder(
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
                         mainAxisExtent: 110,
                       ),
                       physics: const NeverScrollableScrollPhysics(),
@@ -269,10 +312,9 @@ class _HomeFoodTabViewState extends State<HomeFoodTabView> {
                       itemCount: foodCatArr.length,
                       itemBuilder: ((context, index) {
                         var mObj = foodCatArr[index] as Map? ?? {};
-                        // Map the API structure to the UI structure expected by FoodTabCatCell
                         var uiObj = {
                           "title": mObj["name"] ?? "",
-                          "image": mObj["image_url"] ?? "assets/img/cat_3.png", // fallback local img
+                          "image": mObj["image_url"] ?? "assets/img/cat_3.png",
                         };
                         return FoodTabCatCell(
                           mObj: uiObj,
@@ -281,9 +323,9 @@ class _HomeFoodTabViewState extends State<HomeFoodTabView> {
                       }),
                     ),
         ),
-        const SizedBox(
-          height: 12,
-        ),
+
+        // ─── Restaurants ───
+        const SizedBox(height: 8),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: ViewAllTitleRow(
@@ -291,63 +333,65 @@ class _HomeFoodTabViewState extends State<HomeFoodTabView> {
             onView: () {},
           ),
         ),
-        const SizedBox(
-          height: 12,
-        ),
+        const SizedBox(height: 8),
         isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? Padding(
+                padding: const EdgeInsets.all(40),
+                child: CircularProgressIndicator(
+                  color: TColor.primary,
+                  strokeWidth: 2.5,
+                ),
+              )
             : restaurants.isEmpty
                 ? Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 32),
                       Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: TColor.primary.withOpacity(0.1),
+                          color: TColor.primaryLight,
                           shape: BoxShape.circle,
                         ),
-                        child: Image.asset(
-                          "assets/img/location-pin.png",
-                          width: 80,
-                          height: 80,
+                        child: Icon(
+                          Icons.location_on_rounded,
+                          size: 48,
                           color: TColor.primary,
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
                       Text(
                         "Coming Soon! 🚀",
-                        style: TextStyle(
+                        style: GoogleFonts.plusJakartaSans(
                           color: TColor.primaryText,
-                          fontSize: 24,
+                          fontSize: 22,
                           fontWeight: FontWeight.w800,
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 40),
                         child: Text(
-                          "We are not currently serving in your area, but we're working hard to get there buddy!\nStay tuned for delicious updates.",
-                          style: TextStyle(
+                          "We are not currently serving in your area, but we're working hard to get there!\nStay tuned for delicious updates.",
+                          style: GoogleFonts.plusJakartaSans(
                             color: TColor.secondaryText,
-                            fontSize: 16,
+                            fontSize: 14,
                             height: 1.5,
                           ),
                           textAlign: TextAlign.center,
                         ),
                       ),
-                      const SizedBox(height: 60),
+                      const SizedBox(height: 50),
                     ],
                   )
                 : ListView.builder(
-                    physics: const BouncingScrollPhysics(),
+                    physics: const NeverScrollableScrollPhysics(),
                     shrinkWrap: true,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: restaurants.length,
                     itemBuilder: ((context, index) {
                       var rObj = restaurants[index] as Map? ?? {};
-                      // Map the api properties "rating", "delivery_time", "cuisine", "image_url" to UI keys.
                       var uiObj = {
                         "image": rObj["image_url"] ?? "assets/img/pizza_hub.png",
                         "name": rObj["name"] ?? "",
@@ -362,7 +406,7 @@ class _HomeFoodTabViewState extends State<HomeFoodTabView> {
                     }),
                   ),
         const SizedBox(
-          height: 50,
+          height: 70,
         )
       ],
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../common/color_extension.dart';
 
@@ -19,26 +20,31 @@ class TabButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Image.asset(
-            icon,
-            width: 18,
-            height: 18,
-            color: isSelected ? TColor.primary : TColor.placeholder,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(
+      borderRadius: BorderRadius.circular(12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Image.asset(
+              icon,
+              width: 20,
+              height: 20,
               color: isSelected ? TColor.primary : TColor.placeholder,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
             ),
-          ),
-        ],
+            const SizedBox(height: 4),
+            Text(
+              title,
+              style: GoogleFonts.plusJakartaSans(
+                color: isSelected ? TColor.primary : TColor.placeholder,
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

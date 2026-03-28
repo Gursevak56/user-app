@@ -4,6 +4,7 @@ import 'package:food_delivery/common/globs.dart';
 import 'package:food_delivery/common/service_call.dart';
 import 'package:food_delivery/common/cart_provider.dart';
 import 'package:food_delivery/view/more/my_order_view.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
@@ -57,7 +58,12 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
     final items = order['items'] as List? ?? [];
     if (items.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No items to reorder')),
+        SnackBar(
+          content: const Text('No items to reorder'),
+          backgroundColor: TColor.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
       );
       return;
     }
@@ -65,16 +71,20 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Reorder'),
-        content: const Text('Clear your current cart and add these items?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Reorder',
+            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
+        content: Text('Clear your current cart and add these items?',
+            style: GoogleFonts.plusJakartaSans()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text('Cancel', style: TextStyle(color: TColor.secondaryText)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Yes, Reorder', style: TextStyle(color: Colors.green)),
+            child: Text('Yes, Reorder',
+                style: TextStyle(color: TColor.success, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -120,26 +130,34 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
 
   Color _getStatusColor(String status) {
     status = status.toLowerCase();
-    if (status.contains('delivered')) return Colors.green;
-    if (status.contains('cancel') || status.contains('failed')) return Colors.red;
+    if (status.contains('delivered')) return TColor.success;
+    if (status.contains('cancel') || status.contains('failed')) return TColor.error;
     return TColor.primary;
+  }
+
+  IconData _getStatusIcon(String status) {
+    status = status.toLowerCase();
+    if (status.contains('delivered')) return Icons.check_circle_rounded;
+    if (status.contains('cancel') || status.contains('failed')) return Icons.cancel_rounded;
+    if (status.contains('prepar')) return Icons.restaurant_rounded;
+    return Icons.access_time_rounded;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xffF5F5F5),
+      backgroundColor: TColor.background,
       appBar: AppBar(
         backgroundColor: TColor.white,
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: Image.asset("assets/img/btn_back.png", width: 20, height: 20),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
         ),
         title: Text(
           "Order History",
-          style: TextStyle(
+          style: GoogleFonts.plusJakartaSans(
             color: TColor.primaryText,
             fontSize: 20,
             fontWeight: FontWeight.w800,
@@ -147,20 +165,41 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
         ),
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(
+              child: CircularProgressIndicator(
+                color: TColor.primary,
+                strokeWidth: 2.5,
+              ),
+            )
           : ordersArr.isEmpty
               ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.receipt_long, size: 80, color: TColor.placeholder),
-                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: TColor.primaryLight,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.receipt_long_rounded,
+                            size: 48, color: TColor.primary),
+                      ),
+                      const SizedBox(height: 20),
                       Text(
                         "No past orders",
-                        style: TextStyle(
+                        style: GoogleFonts.plusJakartaSans(
+                          color: TColor.primaryText,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        "Your order history will appear here",
+                        style: GoogleFonts.plusJakartaSans(
                           color: TColor.secondaryText,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
                         ),
                       ),
                     ],
@@ -177,12 +216,19 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
                     final total = (order['total_amount'] as num? ?? order['total'] as num? ?? 0).toDouble();
                     final items = order['items'] as List? ?? [];
 
-                    return Card(
-                      color: Colors.white,
-                      elevation: 2,
-                      shadowColor: Colors.black12,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      margin: const EdgeInsets.only(bottom: 16),
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: TColor.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Column(
@@ -191,39 +237,54 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  "Order #$orderId",
-                                  style: TextStyle(
-                                    color: TColor.primaryText,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      _getStatusIcon(status),
+                                      size: 18,
+                                      color: _getStatusColor(status),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      "Order #$orderId",
+                                      style: GoogleFonts.plusJakartaSans(
+                                        color: TColor.primaryText,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: _getStatusColor(status).withOpacity(0.1),
+                                    color: _getStatusColor(status)
+                                        .withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
                                     status.toUpperCase(),
-                                    style: TextStyle(
+                                    style: GoogleFonts.plusJakartaSans(
                                       color: _getStatusColor(status),
-                                      fontSize: 12,
+                                      fontSize: 11,
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 6),
                             Text(
                               _formatDate(date),
-                              style: TextStyle(color: TColor.secondaryText, fontSize: 13),
+                              style: GoogleFonts.plusJakartaSans(
+                                color: TColor.secondaryText,
+                                fontSize: 12,
+                              ),
                             ),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 12),
-                              child: Divider(height: 1),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: Divider(color: TColor.border, height: 1),
                             ),
                             ...items.take(3).map((item) {
                               final name = (item as Map)['name']?.toString() ?? 'Item';
@@ -231,8 +292,11 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 4),
                                 child: Text(
-                                  "$qty x $name",
-                                  style: TextStyle(color: TColor.primaryText, fontSize: 13),
+                                  "$qty × $name",
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: TColor.primaryText,
+                                    fontSize: 13,
+                                  ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -241,35 +305,52 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
                             if (items.length > 3)
                               Text(
                                 "...and ${items.length - 3} more items",
-                                style: TextStyle(color: TColor.secondaryText, fontSize: 12),
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: TColor.secondaryText,
+                                  fontSize: 12,
+                                ),
                               ),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 12),
-                              child: Divider(height: 1),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: Divider(color: TColor.border, height: 1),
                             ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
                                   "₹${total.toStringAsFixed(0)}",
-                                  style: TextStyle(
+                                  style: GoogleFonts.plusJakartaSans(
                                     color: TColor.primaryText,
-                                    fontSize: 16,
+                                    fontSize: 18,
                                     fontWeight: FontWeight.w800,
                                   ),
                                 ),
-                                ElevatedButton.icon(
-                                  onPressed: () => _reorder(order),
-                                  icon: const Icon(Icons.refresh, size: 16),
-                                  label: const Text("Reorder"),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: TColor.primary,
-                                    foregroundColor: Colors.white,
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
+                                Material(
+                                  color: TColor.primary,
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: InkWell(
+                                    onTap: () => _reorder(order),
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 18, vertical: 10),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(Icons.refresh_rounded,
+                                              size: 16, color: Colors.white),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            "Reorder",
+                                            style: GoogleFonts.plusJakartaSans(
+                                              color: Colors.white,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                   ),
                                 ),
                               ],

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../common/color_extension.dart';
 import '../../common/globs.dart';
@@ -82,25 +84,24 @@ class _MenuViewState extends State<MenuView> {
 
   @override
   Widget build(BuildContext context) {
-    var media = MediaQuery.of(context).size;
     return Scaffold(
-      backgroundColor: TColor.white,
+      backgroundColor: TColor.background,
       appBar: AppBar(
         backgroundColor: TColor.white,
         scrolledUnderElevation: 0,
         elevation: 0,
         automaticallyImplyLeading: false,
         title: Text(
-          "Menu",
-          style: TextStyle(
+          "Restaurants",
+          style: GoogleFonts.plusJakartaSans(
             color: TColor.primaryText,
-            fontSize: 20,
+            fontSize: 22,
             fontWeight: FontWeight.w800,
           ),
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 20.0),
+            padding: const EdgeInsets.only(right: 12.0),
             child: IconButton(
               onPressed: () {
                 Navigator.push(
@@ -108,11 +109,17 @@ class _MenuViewState extends State<MenuView> {
                   MaterialPageRoute(builder: (context) => const MyOrderView()),
                 );
               },
-              icon: Image.asset(
-                "assets/img/shopping_cart.png",
-                width: 25,
-                height: 25,
-                color: TColor.primary,
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: TColor.primaryLight,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.shopping_bag_outlined,
+                  size: 22,
+                  color: TColor.primary,
+                ),
               ),
             ),
           ),
@@ -120,173 +127,226 @@ class _MenuViewState extends State<MenuView> {
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(20),
+          // Search bar
+          Container(
+            color: TColor.white,
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
             child: RoundTextfield(
-              hintText: "Search Food",
+              hintText: "Search restaurants",
               controller: txtSearch,
-              left: Container(
-                alignment: Alignment.center,
-                width: 30,
-                child: Image.asset(
-                  "assets/img/search.png",
-                  width: 20,
-                  height: 20,
-                ),
-              ),
+              left: Icon(Icons.search_rounded,
+                  color: TColor.placeholder, size: 22),
             ),
           ),
-          Stack(
-            alignment: Alignment.centerLeft,
-            children: [
-              Container(
-                width: media.width * 0.27,
-                height: media.height * 0.6,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: TColor.primaryGradient,
-                    begin: Alignment.topRight,
-                    end: Alignment.bottomLeft,
-                  ),
-                  borderRadius: const BorderRadius.only(
-                      topRight: Radius.circular(35),
-                      bottomRight: Radius.circular(35)),
-                ),
-              ),
-              SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Column(
-                    children: [
-                      isLoading 
-                        ? const Center(child: CircularProgressIndicator()) 
-                        : menuArr.isEmpty 
-                            ? const Padding(
-                                padding: EdgeInsets.all(20),
-                                child: Text("No restaurants found."),
-                              )
-                            : ListView.builder(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 30, horizontal: 20),
-                                physics: const NeverScrollableScrollPhysics(),
-                                shrinkWrap: true,
-                                itemCount: _filteredMenuArr.length,
-                                itemBuilder: ((context, index) {
-                                  var mObj = _filteredMenuArr[index] as Map? ?? {};
-                                  return GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => MenuItemsView(
-                                            mObj: mObj,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                    child: Stack(
-                                      alignment: Alignment.centerRight,
-                                      children: [
-                                        Container(
-                                          margin: const EdgeInsets.only(
-                                              top: 8, bottom: 8, right: 20),
-                                          width: media.width - 100,
-                                          height: 90,
-                                          decoration: const BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius: BorderRadius.only(
-                                                  topLeft: Radius.circular(25),
-                                                  bottomLeft: Radius.circular(25),
-                                                  topRight: Radius.circular(10),
-                                                  bottomRight: Radius.circular(10)),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Colors.black12,
-                                                    blurRadius: 7,
-                                                    offset: Offset(0, 4))
-                                              ]),
-                                        ),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Image.asset(
-                                              // fallback image logic since real may be network
-                                              "assets/img/pizza_hub.png",
-                                              width: 80,
-                                              height: 80,
-                                              fit: BoxFit.contain,
-                                            ),
-                                            const SizedBox(
-                                              width: 15,
-                                            ),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    mObj["name"]?.toString() ?? "Restaurant",
-                                                    style: TextStyle(
-                                                        color: TColor.primaryText,
-                                                        fontSize: 18,
-                                                        fontWeight: FontWeight.w700),
-                                                    maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
-                                                  ),
-                                                  const SizedBox(
-                                                    height: 4,
-                                                  ),
-                                                  Text(
-                                                    mObj["cuisine"]?.toString() ?? "Various",
-                                                    style: TextStyle(
-                                                        color: TColor.secondaryText,
-                                                        fontSize: 11),
-                                                    maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            FavoriteToggleBtn(
-                                              itemId: (mObj["id"] as num? ?? 0).toInt(),
-                                              itemType: "restaurant",
-                                              isFavorite: mObj["is_favorite"] == 1 || mObj["is_favorite"] == true,
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Container(
-                                              width: 35,
-                                              height: 35,
-                                              decoration: BoxDecoration(
-                                                  color: Colors.white,
-                                                  borderRadius:
-                                                      BorderRadius.circular(17.5),
-                                                  boxShadow: const [
-                                                    BoxShadow(
-                                                        color: Colors.black12,
-                                                        blurRadius: 4,
-                                                        offset: Offset(0, 2))
-                                                  ]),
-                                              alignment: Alignment.center,
-                                              child: Image.asset(
-                                                "assets/img/btn_next.png",
-                                                width: 15,
-                                                height: 15,
-                                                color: TColor.secondary,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
+          // Restaurant list
+          Expanded(
+            child: isLoading
+                ? Center(
+                    child: CircularProgressIndicator(
+                      color: TColor.primary,
+                      strokeWidth: 2.5,
+                    ),
+                  )
+                : _filteredMenuArr.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: TColor.primaryLight,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(Icons.restaurant_rounded,
+                                  size: 40, color: TColor.primary),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              "No restaurants found",
+                              style: GoogleFonts.plusJakartaSans(
+                                color: TColor.secondaryText,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: _filteredMenuArr.length,
+                        itemBuilder: ((context, index) {
+                          var mObj = _filteredMenuArr[index] as Map? ?? {};
+                          final imageUrl = mObj["image_url"]?.toString() ?? "";
+                          final isNetwork = imageUrl.startsWith("http");
+
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => MenuItemsView(
+                                    mObj: mObj,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 14),
+                              decoration: BoxDecoration(
+                                color: TColor.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  // Image
+                                  ClipRRect(
+                                    borderRadius: const BorderRadius.horizontal(
+                                      left: Radius.circular(16),
                                     ),
-                                  );
-                                }))
-                    ],
-                  ),
-                ),
-              ),
-            ],
+                                    child: SizedBox(
+                                      width: 100,
+                                      height: 100,
+                                      child: isNetwork
+                                          ? CachedNetworkImage(
+                                              imageUrl: imageUrl,
+                                              fit: BoxFit.cover,
+                                              placeholder: (_, __) =>
+                                                  Container(
+                                                color: TColor.primaryLight,
+                                                child: Center(
+                                                  child: Icon(
+                                                    Icons.restaurant_rounded,
+                                                    color: TColor.primary
+                                                        .withOpacity(0.3),
+                                                    size: 28,
+                                                  ),
+                                                ),
+                                              ),
+                                              errorWidget: (_, __, ___) =>
+                                                  Container(
+                                                color: TColor.primaryLight,
+                                                child: Center(
+                                                  child: Icon(
+                                                    Icons.restaurant_rounded,
+                                                    color: TColor.primary
+                                                        .withOpacity(0.3),
+                                                    size: 28,
+                                                  ),
+                                                ),
+                                              ),
+                                            )
+                                          : Container(
+                                              color: TColor.primaryLight,
+                                              child: Center(
+                                                child: Icon(
+                                                  Icons.restaurant_rounded,
+                                                  color: TColor.primary
+                                                      .withOpacity(0.3),
+                                                  size: 28,
+                                                ),
+                                              ),
+                                            ),
+                                    ),
+                                  ),
+                                  // Info
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 14, vertical: 12),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            mObj["name"]?.toString() ??
+                                                "Restaurant",
+                                            style:
+                                                GoogleFonts.plusJakartaSans(
+                                              color: TColor.primaryText,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            mObj["cuisine"]?.toString() ??
+                                                "Various",
+                                            style:
+                                                GoogleFonts.plusJakartaSans(
+                                              color: TColor.secondaryText,
+                                              fontSize: 13,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Row(
+                                            children: [
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 3),
+                                                decoration: BoxDecoration(
+                                                  color: TColor.success,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          5),
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    const Icon(
+                                                        Icons.star_rounded,
+                                                        color: Colors.white,
+                                                        size: 12),
+                                                    const SizedBox(width: 2),
+                                                    Text(
+                                                      mObj["rating"]
+                                                              ?.toString() ??
+                                                          "0",
+                                                      style: GoogleFonts
+                                                          .plusJakartaSans(
+                                                        color: Colors.white,
+                                                        fontSize: 11,
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              const Spacer(),
+                                              Icon(
+                                                  Icons
+                                                      .arrow_forward_ios_rounded,
+                                                  size: 14,
+                                                  color:
+                                                      TColor.placeholder),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
           ),
         ],
       ),

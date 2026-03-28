@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../common/color_extension.dart';
 
@@ -12,36 +13,42 @@ class RoundIconButton extends StatelessWidget {
     super.key,
     required this.title,
     required this.icon,
-    this.fontSize = 12,
-    this.fontWeight = FontWeight.w500,
+    this.fontSize = 14,
+    this.fontWeight = FontWeight.w600,
     required this.onPressed,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onPressed,
-      child: Container(
-        height: 56,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(colors: TColor.primaryGradient),
-          borderRadius: BorderRadius.circular(28),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.asset(icon, width: 15, height: 15, fit: BoxFit.contain),
-            const SizedBox(width: 8),
-            Text(
-              title,
-              style: TextStyle(
-                color: TColor.white,
-                fontSize: fontSize,
-                fontWeight: fontWeight,
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          height: 54,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: TColor.textfield,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: TColor.border, width: 1),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(icon, width: 20, height: 20, fit: BoxFit.contain),
+              const SizedBox(width: 10),
+              Text(
+                title,
+                style: GoogleFonts.plusJakartaSans(
+                  color: TColor.primaryText,
+                  fontSize: fontSize,
+                  fontWeight: fontWeight,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

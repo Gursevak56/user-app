@@ -7,6 +7,7 @@ import 'package:food_delivery/view/more/payment_details_view.dart';
 import 'package:food_delivery/view/profile/profile_view.dart';
 import 'package:food_delivery/view/order/order_history_view.dart';
 import 'package:food_delivery/view/more/favorite_view.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../common/color_extension.dart';
 import '../../common/service_call.dart';
@@ -19,61 +20,21 @@ class MoreView extends StatefulWidget {
 }
 
 class _MoreViewState extends State<MoreView> {
-  List moreArr = [
-    {
-      "index": "1",
-      "name": "Payment Details",
-      "image": "assets/img/more_payment.png",
-      "base": 0
-    },
-    {
-      "index": "2",
-      "name": "Profile",
-      "image": "assets/img/tab_profile_update.png",
-      "base": 0
-    },
-    {
-      "index": "3",
-      "name": "Notifications",
-      "image": "assets/img/more_notification.png",
-      "base": 15
-    },
-    {
-      "index": "4",
-      "name": "Inbox",
-      "image": "assets/img/more_inbox.png",
-      "base": 0
-    },
-    {
-      "index": "5",
-      "name": "About Us",
-      "image": "assets/img/more_info.png",
-      "base": 0
-    },
-    {
-      "index": "7",
-      "name": "Order History",
-      "image": "assets/img/more_my_order.png",
-      "base": 0
-    },
-    {
-      "index": "8",
-      "name": "My Favorites",
-      "image": "assets/img/favorites_btn_2.png",
-      "base": 0
-    },
-    {
-      "index": "6",
-      "name": "Logout",
-      "image": "assets/img/more_logout.png",
-      "base": 0
-    },
+  final List<Map<String, dynamic>> moreArr = [
+    {"index": "1", "name": "Payment Details", "icon": Icons.payment_rounded, "color": Color(0xFF5C6BC0)},
+    {"index": "2", "name": "Profile", "icon": Icons.person_outline_rounded, "color": Color(0xFF26A69A)},
+    {"index": "3", "name": "Notifications", "icon": Icons.notifications_outlined, "color": Color(0xFFFF7043)},
+    {"index": "4", "name": "Inbox", "icon": Icons.chat_bubble_outline_rounded, "color": Color(0xFF42A5F5)},
+    {"index": "5", "name": "About Us", "icon": Icons.info_outline_rounded, "color": Color(0xFF7E57C2)},
+    {"index": "7", "name": "Order History", "icon": Icons.history_rounded, "color": Color(0xFF66BB6A)},
+    {"index": "8", "name": "My Favorites", "icon": Icons.favorite_border_rounded, "color": Color(0xFFEC407A)},
+    {"index": "6", "name": "Logout", "icon": Icons.logout_rounded, "color": Color(0xFFEF5350)},
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: TColor.white,
+      backgroundColor: TColor.background,
       appBar: AppBar(
         backgroundColor: TColor.white,
         scrolledUnderElevation: 0,
@@ -81,15 +42,15 @@ class _MoreViewState extends State<MoreView> {
         automaticallyImplyLeading: false,
         title: Text(
           "More",
-          style: TextStyle(
+          style: GoogleFonts.plusJakartaSans(
             color: TColor.primaryText,
-            fontSize: 20,
+            fontSize: 22,
             fontWeight: FontWeight.w800,
           ),
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 20.0),
+            padding: const EdgeInsets.only(right: 12.0),
             child: IconButton(
               onPressed: () {
                 Navigator.push(
@@ -97,11 +58,17 @@ class _MoreViewState extends State<MoreView> {
                   MaterialPageRoute(builder: (context) => const MyOrderView()),
                 );
               },
-              icon: Image.asset(
-                "assets/img/shopping_cart.png",
-                width: 25,
-                height: 25,
-                color: TColor.primary,
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: TColor.primaryLight,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.shopping_bag_outlined,
+                  size: 22,
+                  color: TColor.primary,
+                ),
               ),
             ),
           ),
@@ -109,185 +76,142 @@ class _MoreViewState extends State<MoreView> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               ListView.builder(
-                  padding: EdgeInsets.zero,
-                  physics: const NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  itemCount: moreArr.length,
-                  itemBuilder: (context, index) {
-                    var mObj = moreArr[index] as Map? ?? {};
-                    var countBase = mObj["base"] as int? ?? 0;
-                    return InkWell(
-                      onTap: () {
-                        switch (mObj["index"].toString()) {
-                          case "1":
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const PaymentDetailsView()));
-
-                            break;
-
-                          case "2":
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const ProfileView()));
-                          case "3":
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const NotificationsView()));
-                          case "4":
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const InboxView()));
-                          case "5":
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const AboutUsView()));
-                            break;
-                          case "7":
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const OrderHistoryView()));
-                            break;
-                          case "8":
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const FavoriteView()));
-                            break;
-                          case "6":
-                            showDialog(
-                              context: context,
-                              builder: (ctx) => AlertDialog(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
+                padding: EdgeInsets.zero,
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: moreArr.length,
+                itemBuilder: (context, index) {
+                  var mObj = moreArr[index];
+                  final isLogout = mObj["index"] == "6";
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Material(
+                      color: TColor.white,
+                      borderRadius: BorderRadius.circular(14),
+                      child: InkWell(
+                        onTap: () => _handleTap(mObj["index"].toString()),
+                        borderRadius: BorderRadius.circular(14),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 14, horizontal: 16),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 44,
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  color: (mObj["color"] as Color)
+                                      .withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                                title: Text('Sign Out',
-                                    style: TextStyle(
-                                        color: TColor.primaryText,
-                                        fontWeight: FontWeight.w700)),
-                                content: const Text(
-                                    'Are you sure you want to sign out?'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(ctx),
-                                    child: Text('Cancel',
-                                        style: TextStyle(
-                                            color: TColor.secondaryText)),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(ctx);
-                                      ServiceCall.logout();
-                                    },
-                                    child: const Text('Sign Out',
-                                        style: TextStyle(color: Colors.red)),
-                                  ),
-                                ],
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  mObj["icon"] as IconData,
+                                  size: 22,
+                                  color: mObj["color"] as Color,
+                                ),
                               ),
-                            );
-
-                          default:
-                        }
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(
-                            vertical: 8, horizontal: 20),
-                        child: Stack(
-                          alignment: Alignment.centerRight,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 12, horizontal: 12),
-                              decoration: BoxDecoration(
-                                  color: TColor.textfield,
-                                  borderRadius: BorderRadius.circular(10)),
-                              margin: const EdgeInsets.only(right: 15),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    width: 50,
-                                    height: 50,
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                        color: TColor.placeholder,
-                                        borderRadius:
-                                            BorderRadius.circular(25)),
-                                    alignment: Alignment.center,
-                                    child: Image.asset(mObj["image"].toString(),
-                                        width: 25,
-                                        height: 25,
-                                        fit: BoxFit.contain),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Text(
+                                  mObj["name"].toString(),
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: isLogout
+                                        ? TColor.primary
+                                        : TColor.primaryText,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
                                   ),
-                                  const SizedBox(
-                                    width: 15,
-                                  ),
-                                  Expanded(
-                                    child: Text(
-                                      mObj["name"].toString(),
-                                      style: TextStyle(
-                                          color: TColor.primaryText,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600),
-                                    ),
-                                  ),
-                                  const SizedBox(
-                                    width: 15,
-                                  ),
-                                  if (countBase > 0)
-                                    Container(
-                                      padding: const EdgeInsets.all(4),
-                                      decoration: BoxDecoration(
-                                          color: Colors.red,
-                                          borderRadius:
-                                              BorderRadius.circular(12.5)),
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        countBase.toString(),
-                                        style: TextStyle(
-                                            color: TColor.white,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600),
-                                      ),
-                                    ),
-                                  const SizedBox(
-                                    width: 10,
-                                  ),
-                                ],
+                                ),
                               ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                  color: TColor.textfield,
-                                  borderRadius: BorderRadius.circular(15)),
-                              child: Image.asset("assets/img/btn_next.png",
-                                  width: 10,
-                                  height: 10,
-                                  color: TColor.secondary),
-                            ),
-                          ],
+                              if (!isLogout)
+                                Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  size: 16,
+                                  color: TColor.placeholder,
+                                ),
+                            ],
+                          ),
                         ),
                       ),
-                    );
-                  })
+                    ),
+                  );
+                },
+              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void _handleTap(String index) {
+    switch (index) {
+      case "1":
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const PaymentDetailsView()));
+        break;
+      case "2":
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const ProfileView()));
+        break;
+      case "3":
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const NotificationsView()));
+        break;
+      case "4":
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const InboxView()));
+        break;
+      case "5":
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const AboutUsView()));
+        break;
+      case "7":
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const OrderHistoryView()));
+        break;
+      case "8":
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const FavoriteView()));
+        break;
+      case "6":
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: Text('Sign Out',
+                style: GoogleFonts.plusJakartaSans(
+                    color: TColor.primaryText, fontWeight: FontWeight.w700)),
+            content: Text('Are you sure you want to sign out?',
+                style: GoogleFonts.plusJakartaSans()),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text('Cancel',
+                    style: TextStyle(color: TColor.secondaryText)),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  ServiceCall.logout();
+                },
+                child:
+                    Text('Sign Out', style: TextStyle(color: TColor.primary)),
+              ),
+            ],
+          ),
+        );
+        break;
+    }
   }
 }
