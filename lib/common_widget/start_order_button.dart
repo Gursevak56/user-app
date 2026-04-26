@@ -24,28 +24,23 @@ class StartOrderButton extends StatelessWidget {
           height: 50,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: TColor.primary,
+            gradient: TColor.foodTabGradient,
             borderRadius: BorderRadius.circular(50),
-            boxShadow: [
-              BoxShadow(
-                color: TColor.primary.withOpacity(0.35),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            boxShadow: TColor.primaryShadow,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.receipt_long_rounded,
+              const Icon(Icons.shopping_bag_rounded,
                   color: Colors.white, size: 18),
               const SizedBox(width: 8),
               Text(
                 "My Orders",
                 style: GoogleFonts.plusJakartaSans(
                   color: Colors.white,
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
+                  letterSpacing: 0.3,
                 ),
               ),
             ],

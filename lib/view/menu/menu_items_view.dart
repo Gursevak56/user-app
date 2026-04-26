@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:food_delivery/common/color_extension.dart';
@@ -20,72 +21,145 @@ class MenuItemsView extends StatefulWidget {
 class _MenuItemsViewState extends State<MenuItemsView> {
   TextEditingController txtSearch = TextEditingController();
   String _searchQuery = '';
+  Timer? _debounce;
 
-  List menuCategoriesArr = [];
+  List menuItemsArr = [];
   Map restaurantInfo = {};
   bool isLoading = true;
 
-  /// Filter categories and their items by search query
-  List get _filteredCategories {
-    if (_searchQuery.isEmpty) return menuCategoriesArr;
-    return menuCategoriesArr.map((cat) {
-      final catMap = cat as Map? ?? {};
-      final items = (catMap['items'] as List? ?? []).where((item) {
-        final name = (item as Map?)?['name']?.toString().toLowerCase() ?? '';
-        return name.contains(_searchQuery.toLowerCase());
-      }).toList();
-      return {...catMap, 'items': items};
-    }).where((cat) => (cat['items'] as List).isNotEmpty).toList();
-  }
+  // Filters
+  int? _selectedCategoryId;
+  bool _isVegetarian = false;
+  bool _isVegan = false;
+  bool _isGlutenFree = false;
+  List categoryArr = [];
 
   @override
   void initState() {
     super.initState();
     txtSearch.addListener(() {
-      setState(() => _searchQuery = txtSearch.text.trim());
+      if (_debounce?.isActive ?? false) _debounce!.cancel();
+      _debounce = Timer(const Duration(milliseconds: 500), () {
+        if (_searchQuery != txtSearch.text.trim()) {
+          setState(() {
+            _searchQuery = txtSearch.text.trim();
+            isLoading = true;
+          });
+          _fetchRestaurantMenu();
+        }
+      });
     });
+    _fetchCategories();
     _fetchRestaurantMenu();
   }
 
   @override
   void dispose() {
+    _debounce?.cancel();
     txtSearch.dispose();
     super.dispose();
+  }
+
+  void _fetchCategories() async {
+    final resId = widget.mObj["restaurant_id"]?.toString() ?? 
+                  widget.mObj["id"]?.toString() ?? "";
+    if (resId.isEmpty) {
+      print("CATEGORY FETCH: resId is empty, skipping");
+      return;
+    }
+
+    final url = "${SVKey.restaurantBaseUrl}/restaurants/$resId/categories";
+    print("-------------- CATEGORY FETCH -----------");
+    print("URL: $url");
+
+    await ServiceCall.get(
+      url,
+      queryParameters: {},
+      isToken: Globs.udValueBool(Globs.userLogin),
+      withSuccess: (responseObj) async {
+        print("Category Response statusCode: ${responseObj[KKey.statusCode]}");
+        final sc = responseObj[KKey.statusCode];
+        if (sc == 200 || sc == "200") {
+          final rawData = responseObj["data"];
+          List items = [];
+          if (rawData is Map) {
+            items = rawData["items"] as List? ?? [];
+          } else if (rawData is List) {
+            items = rawData;
+          }
+          print("Category Array parsed size: ${items.length}");
+          if (mounted) {
+            setState(() {
+              categoryArr = items;
+            });
+          }
+        } else {
+          print("Category fetch: unexpected statusCode=$sc");
+        }
+      },
+      failure: (err) async {
+        print("Category Fetch Err: $err");
+      },
+    );
   }
 
   void _fetchRestaurantMenu() async {
     final lat = Globs.udValueDouble(Globs.userLat).toString();
     final lng = Globs.udValueDouble(Globs.userLng).toString();
-    final resId = widget.mObj["id"]?.toString() ?? "";
+    final resId = widget.mObj["restaurant_id"]?.toString() ?? 
+                  widget.mObj["id"]?.toString() ?? "";
 
     if (resId.isEmpty) {
       setState(() { isLoading = false; });
       return;
     }
 
-    final params = <String, String>{};
-    if (lat != "0.0" && lng != "0.0") {
-      params['lat'] = lat;
-      params['lng'] = lng;
+    final params = <String, String>{
+      "is_available": "true",
+      "is_qrunch": "true",
+    };
+
+    if (_selectedCategoryId != null) {
+      params["category_id"] = _selectedCategoryId.toString();
     }
+    if (_isVegetarian) params["is_vegetarian"] = "true";
+    if (_isVegan) params["is_vegan"] = "true";
+    if (_isGlutenFree) params["is_gluten_free"] = "true";
+    if (_searchQuery.isNotEmpty) params["search"] = _searchQuery;
+
+    print("-------------- MENU FETCH -----------");
+    print("URL: ${SVKey.restaurantBaseUrl}/restaurants/$resId/menu/items");
+    print("Params: $params");
 
     await ServiceCall.get(
-      "${SVKey.restaurantBaseUrl}/api/restaurants/$resId/menu",
+      "${SVKey.restaurantBaseUrl}/restaurants/$resId/menu/items",
       queryParameters: params,
       isToken: Globs.udValueBool(Globs.userLogin),
       withSuccess: (responseObj) async {
-        if (responseObj[KKey.statusCode] == 200) {
-          final data = responseObj["data"] as Map<String, dynamic>? ?? {};
+        print("Menu Response statusCode: ${responseObj[KKey.statusCode]}");
+        final sc = responseObj[KKey.statusCode];
+        if (sc == 200 || sc == "200") {
+          final rawData = responseObj["data"];
+          List data = [];
+          if (rawData is List) {
+            data = rawData;
+          } else if (rawData is Map && rawData["items"] is List) {
+            data = rawData["items"];
+          }
+          print("Menu Array parsed size: ${data.length}");
           if (mounted) {
             setState(() {
-              restaurantInfo = data["restaurant"] as Map? ?? {};
-              menuCategoriesArr = data["menu_categories"] as List? ?? [];
+              menuItemsArr = data;
               isLoading = false;
             });
           }
+        } else {
+          print("Menu parsed failed condition: statusCode=$sc");
+          if (mounted) setState(() => isLoading = false);
         }
       },
       failure: (err) async {
+        print("Menu Fetch Err: $err");
         if (mounted) {
           setState(() { isLoading = false; });
         }
@@ -96,6 +170,9 @@ class _MenuItemsViewState extends State<MenuItemsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      resizeToAvoidBottomInset: true,
       backgroundColor: TColor.background,
       appBar: AppBar(
         backgroundColor: TColor.white,
@@ -149,6 +226,123 @@ class _MenuItemsViewState extends State<MenuItemsView> {
                   color: TColor.placeholder, size: 22),
             ),
           ),
+          
+          // Categories + Dietary Filters
+          Container(
+            color: TColor.white,
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Category chips
+                SizedBox(
+                  height: 42,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: categoryArr.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index == 0) {
+                        final isSelected = _selectedCategoryId == null;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _selectedCategoryId = null;
+                                isLoading = true;
+                              });
+                              _fetchRestaurantMenu();
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: isSelected ? TColor.primary : TColor.white,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: isSelected ? TColor.primary : TColor.placeholder.withOpacity(0.3),
+                                ),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  "All",
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: isSelected ? Colors.white : TColor.primaryText,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                      final cat = categoryArr[index - 1] as Map? ?? {};
+                      final catId = (cat["id"] as num?)?.toInt();
+                      final isSelected = _selectedCategoryId == catId;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedCategoryId = isSelected ? null : catId;
+                              isLoading = true;
+                            });
+                            _fetchRestaurantMenu();
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: isSelected ? TColor.primary : TColor.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isSelected ? TColor.primary : TColor.placeholder.withOpacity(0.3),
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                cat["name"]?.toString() ?? "",
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: isSelected ? Colors.white : TColor.primaryText,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 10),
+                // Dietary filter chips
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      _buildDietaryChip("🥬 Vegetarian", _isVegetarian, (val) {
+                        setState(() { _isVegetarian = val; isLoading = true; });
+                        _fetchRestaurantMenu();
+                      }),
+                      const SizedBox(width: 8),
+                      _buildDietaryChip("🌱 Vegan", _isVegan, (val) {
+                        setState(() { _isVegan = val; isLoading = true; });
+                        _fetchRestaurantMenu();
+                      }),
+                      const SizedBox(width: 8),
+                      _buildDietaryChip("🌾 Gluten Free", _isGlutenFree, (val) {
+                        setState(() { _isGlutenFree = val; isLoading = true; });
+                        _fetchRestaurantMenu();
+                      }),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
           // Content
           Expanded(
             child: isLoading
@@ -158,13 +352,13 @@ class _MenuItemsViewState extends State<MenuItemsView> {
                       strokeWidth: 2.5,
                     ),
                   )
-                : menuCategoriesArr.isEmpty
+                : menuItemsArr.isEmpty
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(20),
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
                               decoration: BoxDecoration(
                                 color: TColor.primaryLight,
                                 shape: BoxShape.circle,
@@ -188,51 +382,16 @@ class _MenuItemsViewState extends State<MenuItemsView> {
                         child: Column(
                           children: [
                             const SizedBox(height: 12),
-                            ListView.builder(
+                            ListView.separated(
                               physics: const NeverScrollableScrollPhysics(),
                               shrinkWrap: true,
                               padding: const EdgeInsets.symmetric(horizontal: 16),
-                              itemCount: _filteredCategories.length,
-                              itemBuilder: ((context, catIndex) {
-                                var catObj = _filteredCategories[catIndex] as Map? ?? {};
-                                var catName = catObj["name"]?.toString() ?? "Items";
-                                var items = catObj["items"] as List? ?? [];
-
-                                if (items.isEmpty) return const SizedBox();
-
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // Category header
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                          top: 8, bottom: 10),
-                                      child: Text(
-                                        catName,
-                                        style: GoogleFonts.plusJakartaSans(
-                                          color: TColor.primaryText,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ),
-                                    // Items
-                                    ListView.separated(
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      shrinkWrap: true,
-                                      itemCount: items.length,
-                                      separatorBuilder: (_, __) =>
-                                          const SizedBox(height: 10),
-                                      itemBuilder: ((context, index) {
-                                        var itemObj = items[index] as Map? ?? {};
-                                        return _buildMenuItem(itemObj, catName);
-                                      }),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Divider(
-                                        color: TColor.border, height: 1),
-                                  ],
-                                );
+                              itemCount: menuItemsArr.length,
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(height: 10),
+                              itemBuilder: ((context, index) {
+                                var itemObj = menuItemsArr[index] as Map? ?? {};
+                                return _buildMenuItem(itemObj, "Menu");
                               }),
                             ),
                             const SizedBox(height: 80),
@@ -241,6 +400,39 @@ class _MenuItemsViewState extends State<MenuItemsView> {
                       ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDietaryChip(String label, bool isSelected, Function(bool) onSelected) {
+    return GestureDetector(
+      onTap: () => onSelected(!isSelected),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          color: isSelected ? TColor.primaryLight : TColor.background,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? TColor.primary : TColor.placeholder.withOpacity(0.2),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.plusJakartaSans(
+                color: isSelected ? TColor.primary : TColor.secondaryText,
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+            if (isSelected) ...[
+              const SizedBox(width: 4),
+              Icon(Icons.check_rounded, size: 14, color: TColor.primary),
+            ],
+          ],
+        ),
       ),
     );
   }

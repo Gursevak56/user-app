@@ -1,11 +1,9 @@
-import 'package:animated_segmented_tab_control/animated_segmented_tab_control.dart';
 import 'package:flutter/material.dart';
 import 'package:food_delivery/common/location_service.dart';
 import 'package:food_delivery/common/color_extension.dart';
 import 'package:food_delivery/common_widget/round_textfield.dart';
 import 'package:food_delivery/common_widget/start_order_button.dart';
 import 'package:food_delivery/view/home/home_food_tab_view.dart';
-import 'package:food_delivery/view/home/home_grocery_tab_view.dart';
 import 'package:food_delivery/view/notifications/notifications_view.dart';
 import '../more/my_order_view.dart';
 import 'package:food_delivery/common/globs.dart';
@@ -21,84 +19,101 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView>
     with SingleTickerProviderStateMixin {
   TextEditingController txtSearch = TextEditingController();
-  late TabController _tabController;
-
-  List<Widget> get tabOptionView => [
-        SingleChildScrollView(child: HomeFoodTabView()),
-        SingleChildScrollView(child: HomeGroceryTabView())
-      ];
+  late AnimationController _fabCtrl;
+  late Animation<Offset> _fabSlide;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _tabController.addListener(() {
-      setState(() {}); // rebuild when tab changes
-    });
-    
-    // Fetch location seamlessly on first load.
     _fetchLocationAndData();
+    _fabCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _fabSlide = Tween<Offset>(
+      begin: const Offset(0, 2),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _fabCtrl, curve: Curves.easeOutCubic));
+    // Delay the FAB entrance for a premium reveal
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (mounted) _fabCtrl.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _fabCtrl.dispose();
+    super.dispose();
   }
 
   void _fetchLocationAndData() async {
     await LocationService.fetchAndSaveCurrentLocation();
     if (mounted) {
-      setState(() {}); // Optionally rebuild if we show location name
+      setState(() {});
     }
   }
 
   @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final isFoodTab = _tabController.index == 0;
+    final userName = Globs.udValueString("user_name");
+    final greeting = _getGreeting();
 
     return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      resizeToAvoidBottomInset: true,
       backgroundColor: TColor.background,
       appBar: AppBar(
         backgroundColor: TColor.white,
         scrolledUnderElevation: 0,
         elevation: 0,
         automaticallyImplyLeading: false,
+        toolbarHeight: 64,
         title: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(6),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: TColor.primaryLight,
-                borderRadius: BorderRadius.circular(10),
+                gradient: TColor.premiumGradient,
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(Icons.location_on_rounded,
-                  color: TColor.primary, size: 20),
+              child: const Icon(Icons.location_on_rounded,
+                  color: Colors.white, size: 20),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Delivering to",
+                    userName.isNotEmpty ? "$greeting, $userName 👋" : greeting,
                     style: GoogleFonts.plusJakartaSans(
                       color: TColor.secondaryText,
-                      fontSize: 11,
+                      fontSize: 12,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  Text(
-                    Globs.udValueString(Globs.userAddress).isNotEmpty 
-                        ? Globs.udValueString(Globs.userAddress)
-                        : "Fetching location...",
-                    style: GoogleFonts.plusJakartaSans(
-                      color: TColor.primaryText,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  const SizedBox(height: 1),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          Globs.udValueString(Globs.userAddress).isNotEmpty
+                              ? Globs.udValueString(Globs.userAddress)
+                              : "Fetching location...",
+                          style: GoogleFonts.plusJakartaSans(
+                            color: TColor.primaryText,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(Icons.keyboard_arrow_down_rounded,
+                          size: 18, color: TColor.primaryText),
+                    ],
                   ),
                 ],
               ),
@@ -106,124 +121,97 @@ class _HomeViewState extends State<HomeView>
           ],
         ),
         actions: [
-          IconButton(
-            onPressed: () {
-              if (Globs.udValueBool(Globs.userLogin)) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const NotificationsView(),
-                  ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Please login to see notifications")),
-                );
-              }
-            },
-            icon: Stack(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+              child: InkWell(
+                onTap: () {
+                  if (Globs.udValueBool(Globs.userLogin)) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const NotificationsView(),
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text("Please login to see notifications"),
+                        backgroundColor: TColor.primaryText,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                    );
+                  }
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: TColor.textfield,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
-                    Icons.notifications_outlined,
+                    Icons.notifications_none_rounded,
                     color: TColor.primaryText,
                     size: 22,
                   ),
                 ),
-              ],
+              ),
             ),
           ),
-          const SizedBox(width: 8),
         ],
       ),
       body: Stack(
         children: [
           Column(
             children: [
-              // Tab switcher area
+              // Search bar area
               Container(
                 color: TColor.white,
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                child: Column(
-                  children: [
-                    // Tab control
-                    SegmentedTabControl(
-                      controller: _tabController,
-                      barDecoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(14),
-                        color: TColor.textfield,
-                      ),
-                      textStyle: GoogleFonts.plusJakartaSans(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15,
-                      ),
-                      height: 48,
-                      tabTextColor: TColor.secondaryText,
-                      selectedTabTextColor: Colors.white,
-                      squeezeIntensity: 2,
-                      indicatorPadding: const EdgeInsets.all(4),
-                      indicatorDecoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      tabs: const [
-                        SegmentTab(
-                          label: 'Food',
-                          gradient: TColor.foodTabGradient,
-                        ),
-                        SegmentTab(
-                          label: 'Grocery',
-                          gradient: TColor.groceryTabGradient,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    // Search bar
-                    RoundTextfield(
-                      hintText: isFoodTab
-                          ? "Search for dishes or restaurants"
-                          : "Search for products",
-                      controller: txtSearch,
-                      left: Icon(Icons.search_rounded,
-                          color: TColor.placeholder, size: 22),
-                    ),
-                  ],
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
+                child: RoundTextfield(
+                  hintText: "Search dishes or restaurants...",
+                  controller: txtSearch,
+                  left: Icon(Icons.search_rounded,
+                      color: TColor.placeholder, size: 22),
                 ),
               ),
               Expanded(
-                child: TabBarView(
-                  controller: _tabController,
+                child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
-                  children: tabOptionView,
+                  child: const HomeFoodTabView(),
                 ),
               ),
             ],
           ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: SizedBox(
-                width: 170,
-                height: 48,
-                child: InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const MyOrderView(),
-                      ),
-                    );
-                  },
-                  child: StartOrderButton(
-                    onPressed: () {},
-                    gradient: isFoodTab
-                        ? TColor.foodTabGradient
-                        : TColor.groceryTabGradient,
+          // Floating My Orders button
+          Positioned(
+            bottom: 20,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: SlideTransition(
+                position: _fabSlide,
+                child: SizedBox(
+                  width: 170,
+                  height: 50,
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const MyOrderView(),
+                        ),
+                      );
+                    },
+                    child: StartOrderButton(
+                      onPressed: () {},
+                      gradient: TColor.foodTabGradient,
+                    ),
                   ),
                 ),
               ),
@@ -232,5 +220,12 @@ class _HomeViewState extends State<HomeView>
         ],
       ),
     );
+  }
+
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
   }
 }

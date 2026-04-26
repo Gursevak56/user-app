@@ -11,6 +11,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../common/color_extension.dart';
 import '../../common/service_call.dart';
+import '../../common/globs.dart';
 
 class MoreView extends StatefulWidget {
   const MoreView({super.key});
@@ -21,86 +22,146 @@ class MoreView extends StatefulWidget {
 
 class _MoreViewState extends State<MoreView> {
   final List<Map<String, dynamic>> moreArr = [
-    {"index": "1", "name": "Payment Details", "icon": Icons.payment_rounded, "color": Color(0xFF5C6BC0)},
-    {"index": "2", "name": "Profile", "icon": Icons.person_outline_rounded, "color": Color(0xFF26A69A)},
-    {"index": "3", "name": "Notifications", "icon": Icons.notifications_outlined, "color": Color(0xFFFF7043)},
-    {"index": "4", "name": "Inbox", "icon": Icons.chat_bubble_outline_rounded, "color": Color(0xFF42A5F5)},
-    {"index": "5", "name": "About Us", "icon": Icons.info_outline_rounded, "color": Color(0xFF7E57C2)},
-    {"index": "7", "name": "Order History", "icon": Icons.history_rounded, "color": Color(0xFF66BB6A)},
-    {"index": "8", "name": "My Favorites", "icon": Icons.favorite_border_rounded, "color": Color(0xFFEC407A)},
-    {"index": "6", "name": "Logout", "icon": Icons.logout_rounded, "color": Color(0xFFEF5350)},
+    {"index": "1", "name": "Payment Details", "icon": Icons.account_balance_wallet_rounded, "color": const Color(0xFF5C6BC0)},
+    {"index": "2", "name": "Profile", "icon": Icons.person_rounded, "color": const Color(0xFF26A69A)},
+    {"index": "3", "name": "Notifications", "icon": Icons.notifications_rounded, "color": const Color(0xFFFF7043)},
+    {"index": "4", "name": "Inbox", "icon": Icons.chat_rounded, "color": const Color(0xFF42A5F5)},
+    {"index": "5", "name": "About Us", "icon": Icons.info_rounded, "color": const Color(0xFF7E57C2)},
+    {"index": "7", "name": "Order History", "icon": Icons.receipt_long_rounded, "color": const Color(0xFF66BB6A)},
+    {"index": "8", "name": "My Favorites", "icon": Icons.favorite_rounded, "color": const Color(0xFFEC407A)},
+    {"index": "6", "name": "Sign Out", "icon": Icons.logout_rounded, "color": const Color(0xFFEF5350)},
   ];
 
   @override
   Widget build(BuildContext context) {
+    final userName = Globs.udValueString("user_name");
+    final userEmail = Globs.udValueString("user_email");
+    final isLoggedIn = Globs.udValueBool(Globs.userLogin);
+
     return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      resizeToAvoidBottomInset: true,
       backgroundColor: TColor.background,
-      appBar: AppBar(
-        backgroundColor: TColor.white,
-        scrolledUnderElevation: 0,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        title: Text(
-          "More",
-          style: GoogleFonts.plusJakartaSans(
-            color: TColor.primaryText,
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12.0),
-            child: IconButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const MyOrderView()),
-                );
-              },
-              icon: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: TColor.primaryLight,
-                  borderRadius: BorderRadius.circular(12),
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          // ─── Premium Profile Header ───
+          SliverToBoxAdapter(
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [TColor.primary, TColor.primaryDark],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                child: Icon(
-                  Icons.shopping_bag_outlined,
-                  size: 22,
-                  color: TColor.primary,
+              ),
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: Icon(
+                          Icons.person_rounded,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              isLoggedIn && userName.isNotEmpty
+                                  ? userName
+                                  : "Welcome!",
+                              style: GoogleFonts.plusJakartaSans(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            if (isLoggedIn && userEmail.isNotEmpty) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                userEmail,
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: Colors.white.withOpacity(0.75),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      Material(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(12),
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const MyOrderView()),
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.shopping_bag_rounded,
+                              size: 22,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-          child: Column(
-            children: [
-              ListView.builder(
-                padding: EdgeInsets.zero,
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: moreArr.length,
-                itemBuilder: (context, index) {
+
+          // ─── Menu Items ───
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
                   var mObj = moreArr[index];
                   final isLogout = mObj["index"] == "6";
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
+                    padding: EdgeInsets.only(
+                      bottom: index < moreArr.length - 1 ? 8 : 0,
+                      top: isLogout ? 8 : 0,
+                    ),
                     child: Material(
-                      color: TColor.white,
-                      borderRadius: BorderRadius.circular(14),
+                      color: isLogout ? TColor.primaryLight : TColor.white,
+                      borderRadius: BorderRadius.circular(16),
                       child: InkWell(
                         onTap: () => _handleTap(mObj["index"].toString()),
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(16),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                               vertical: 14, horizontal: 16),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
                           child: Row(
                             children: [
                               Container(
@@ -134,7 +195,7 @@ class _MoreViewState extends State<MoreView> {
                               if (!isLogout)
                                 Icon(
                                   Icons.arrow_forward_ios_rounded,
-                                  size: 16,
+                                  size: 15,
                                   color: TColor.placeholder,
                                 ),
                             ],
@@ -144,10 +205,11 @@ class _MoreViewState extends State<MoreView> {
                     ),
                   );
                 },
+                childCount: moreArr.length,
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -187,26 +249,43 @@ class _MoreViewState extends State<MoreView> {
           context: context,
           builder: (ctx) => AlertDialog(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(20),
             ),
             title: Text('Sign Out',
                 style: GoogleFonts.plusJakartaSans(
-                    color: TColor.primaryText, fontWeight: FontWeight.w700)),
-            content: Text('Are you sure you want to sign out?',
-                style: GoogleFonts.plusJakartaSans()),
+                    color: TColor.primaryText,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 18)),
+            content: Text(
+              'Are you sure you want to sign out?',
+              style: GoogleFonts.plusJakartaSans(
+                color: TColor.secondaryText,
+                fontSize: 14,
+              ),
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
                 child: Text('Cancel',
-                    style: TextStyle(color: TColor.secondaryText)),
+                    style: GoogleFonts.plusJakartaSans(
+                        color: TColor.secondaryText,
+                        fontWeight: FontWeight.w600)),
               ),
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  ServiceCall.logout();
-                },
-                child:
-                    Text('Sign Out', style: TextStyle(color: TColor.primary)),
+              Container(
+                decoration: BoxDecoration(
+                  color: TColor.primary,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    ServiceCall.logout();
+                  },
+                  child: Text('Sign Out',
+                      style: GoogleFonts.plusJakartaSans(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700)),
+                ),
               ),
             ],
           ),

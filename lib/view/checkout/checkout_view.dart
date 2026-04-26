@@ -5,8 +5,10 @@ import 'package:food_delivery/common/globs.dart';
 import 'package:food_delivery/common/service_call.dart';
 import 'package:food_delivery/common_widget/auth_bottom_sheet.dart';
 import 'package:food_delivery/common_widget/round_button.dart';
+import 'package:food_delivery/view/main_tabview/main_tabview.dart';
 import 'package:food_delivery/view/more/change_address_view.dart';
 import 'package:food_delivery/view/order/order_tracking_view.dart';
+import 'package:food_delivery/view/order/order_success_view.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
@@ -19,12 +21,10 @@ class CheckoutView extends StatefulWidget {
 }
 
 class _CheckoutViewState extends State<CheckoutView> {
-  final List<Map<String, dynamic>> paymentMethods = [
-    {"name": "Cash on Delivery", "icon": Icons.payments_rounded, "value": "cash_on_delivery"},
-    {"name": "UPI", "icon": Icons.account_balance_rounded, "value": "upi"},
-  ];
+  List<Map<String, dynamic>> paymentMethods = [];
+  bool isLoadingPayments = true;
 
-  int selectedPaymentIndex = 0;
+  int selectedPaymentIndex = -1;
   bool isPlacingOrder = false;
 
   // Order type
@@ -50,6 +50,35 @@ class _CheckoutViewState extends State<CheckoutView> {
     if (address.isNotEmpty) {
       _streetController.text = address;
     }
+    _fetchPaymentMethods();
+  }
+
+  void _fetchPaymentMethods() async {
+    await ServiceCall.get(
+      "${SVKey.restaurantBaseUrl}/api/payment-methods",
+      isToken: Globs.udValueBool(Globs.userLogin),
+      withSuccess: (res) async {
+        if (!mounted) return;
+        if (res['status'] == 'success' || res[KKey.statusCode] == 200) {
+          var data = res['data'];
+          if (data is List) {
+            setState(() {
+              paymentMethods = List<Map<String, dynamic>>.from(data);
+              isLoadingPayments = false;
+              if (paymentMethods.isNotEmpty) selectedPaymentIndex = 0;
+            });
+          } else {
+             setState(() => isLoadingPayments = false);
+          }
+        } else {
+          setState(() => isLoadingPayments = false);
+        }
+      },
+      failure: (err) async {
+        if (!mounted) return;
+        setState(() => isLoadingPayments = false);
+      },
+    );
   }
 
   @override
@@ -64,16 +93,6 @@ class _CheckoutViewState extends State<CheckoutView> {
     double total = 0;
     for (var item in items) {
       if (item['is_taxable'] == true) {
-        total += (item['totalPrice'] as num? ?? 0).toDouble();
-      }
-    }
-    return total;
-  }
-
-  double _nonTaxableTotal(List<Map<String, dynamic>> items) {
-    double total = 0;
-    for (var item in items) {
-      if (item['is_taxable'] != true) {
         total += (item['totalPrice'] as num? ?? 0).toDouble();
       }
     }
@@ -107,8 +126,18 @@ class _CheckoutViewState extends State<CheckoutView> {
 
     final items = cart.items;
     final taxableSum = _taxableTotal(items);
-    final nonTaxableSum = _nonTaxableTotal(items);
+    final subtotal = cart.subtotal; // full subtotal (taxable + non-taxable)
 
+    // Calculate tax amounts (2.5% CGST + 2.5% SGST on taxable items only)
+    final cgst = taxableSum * 0.025;
+    final sgst = taxableSum * 0.025;
+    final taxAmount = cgst + sgst;
+    const double deliveryFee = 0;
+    const double tipAmount = 0;
+    const double discountAmount = 0;
+    final totalAmount = subtotal + taxAmount + deliveryFee + tipAmount - discountAmount;
+
+    // ─── Build order items matching API schema ───
     final orderItems = <Map<String, dynamic>>[];
     for (var item in items) {
       final qty = (item['quantity'] as num? ?? 1).toInt();
@@ -125,6 +154,63 @@ class _CheckoutViewState extends State<CheckoutView> {
 
       final lineTotal = (effectiveUnit + addonTotal) * qty;
 
+      // Build variants array per API Variant Schema
+      final variants = <Map<String, dynamic>>[];
+      if (item['variantId'] != null) {
+        final vid = item['variantId'];
+        if (vid is num && vid.toInt() > 0) {
+          variants.add({
+            'variant_id': vid.toInt(),
+            'item_id': dishId,
+            'variant_name': item['variantName']?.toString() ?? '',
+            'variant_type': item['variantType']?.toString() ?? '',
+            'price': variantPrice,
+            'measurement_unit': item['measurementUnit']?.toString() ?? '',
+            'is_available': true,
+            'is_default': item['isDefaultVariant'] ?? false,
+          });
+        }
+      }
+
+      // Build addons array per API Addon Schema
+      final addons = <Map<String, dynamic>>[];
+      for (var a in addonDetails) {
+        final am = a as Map;
+        addons.add({
+          'addon_id': (am['addon_id'] as num?)?.toInt() ?? 0,
+          'addon_name': am['addon_name']?.toString() ?? '',
+          'addon_type': am['addon_type']?.toString() ?? '',
+          'price': (am['price'] as num? ?? 0).toDouble(),
+          'is_available': am['is_available'] ?? true,
+        });
+      }
+
+      // Build selected_options array for combo items
+      final selectedOptions = <Map<String, dynamic>>[];
+      final rawSelectedOptions = item['selected_options'] as List? ?? [];
+      for (var opt in rawSelectedOptions) {
+        final om = opt as Map;
+        selectedOptions.add({
+          'choice_group_id': (om['choice_group_id'] as num?)?.toInt() ?? 0,
+          'group_name': om['group_name']?.toString() ?? '',
+          'option_id': (om['option_id'] as num?)?.toInt() ?? 0,
+          'option_label': om['option_label']?.toString() ?? '',
+          'price_adjustment': (om['price_adjustment'] as num?)?.toDouble() ?? 0,
+        });
+      }
+
+      // Build combo_items array
+      final comboItems = <Map<String, dynamic>>[];
+      final rawComboItems = item['combo_items'] as List? ?? [];
+      for (var ci in rawComboItems) {
+        final cm = ci as Map;
+        comboItems.add({
+          'menu_item_id': (cm['menu_item_id'] as num?)?.toInt() ?? 0,
+          'qty': (cm['qty'] as num?)?.toInt() ?? 1,
+          'variant_id': (cm['variant_id'] as num?)?.toInt() ?? 0,
+        });
+      }
+
       final orderItem = <String, dynamic>{
         'menuItemId': dishId,
         'name': item['name']?.toString() ?? '',
@@ -132,42 +218,33 @@ class _CheckoutViewState extends State<CheckoutView> {
         'is_taxable': item['is_taxable'] ?? false,
         'unitPrice': effectiveUnit + addonTotal,
         'totalPrice': lineTotal,
+        'variants': variants,
+        'addons': addons,
+        'selected_options': selectedOptions,
+        'is_combo': item['is_combo'] ?? false,
+        'combo_items': comboItems,
       };
-
-      if (item['variantId'] != null) {
-        final vid = item['variantId'];
-        if (vid is num && vid.toInt() > 0) {
-          orderItem['variants'] = [
-            {
-              'variant_id': vid.toInt(),
-              'variant_name': item['variantName']?.toString() ?? '',
-              'price': variantPrice,
-            }
-          ];
-        }
-      }
-
-      if (addonDetails.isNotEmpty) {
-        orderItem['addons'] = addonDetails.map((a) {
-          final am = a as Map;
-          return {
-            'addon_id': (am['addon_id'] as num?)?.toInt() ?? 0,
-            'addon_name': am['addon_name']?.toString() ?? '',
-            'price': (am['price'] as num?)?.toDouble() ?? 0,
-          };
-        }).toList();
-      }
 
       orderItems.add(orderItem);
     }
 
+    final resId = items.isNotEmpty 
+        ? ((items.first['restaurant_id'] as num?)?.toInt() ?? 1) 
+        : 1;
+
+    // Map payment method values to API-expected strings
+    final paymentValue = paymentMethods[selectedPaymentIndex]['value'] as String;
+    final apiPaymentMethod = _mapPaymentMethod(paymentValue);
+
     final payload = <String, dynamic>{
-      'restaurantId': 1,
+      'restaurantId': resId,
       'orderType': orderType,
       'customer': {
-        'name': Globs.getUserId(),
-        'phone': '',
-        'email': '',
+        'name': Globs.udValueString(KKey.name).isNotEmpty 
+            ? Globs.udValueString(KKey.name) 
+            : Globs.getUserId(),
+        'phone': Globs.udValueString("phone"),
+        'email': Globs.udValueString("email"),
       },
       'deliveryAddress': {
         'street': _streetController.text.trim(),
@@ -176,16 +253,16 @@ class _CheckoutViewState extends State<CheckoutView> {
       },
       'deliveryLatitude': Globs.udValueDouble(Globs.userLat),
       'deliveryLongitude': Globs.udValueDouble(Globs.userLng),
-      'paymentMethod': paymentMethods[selectedPaymentIndex]['value'] as String,
+      'paymentMethod': apiPaymentMethod,
       'instructions': widget.instructions,
-      'subtotal': taxableSum,
-      'taxAmount': 0,
-      'deliveryFee': 0,
-      'tipAmount': 0,
-      'discountAmount': 0,
-      'totalAmount': nonTaxableSum,
-      'cgst': 0,
-      'sgst': 0,
+      'subtotal': subtotal,
+      'taxAmount': taxAmount,
+      'cgst': cgst,
+      'sgst': sgst,
+      'deliveryFee': deliveryFee,
+      'tipAmount': tipAmount,
+      'discountAmount': discountAmount,
+      'totalAmount': totalAmount,
       'items': orderItems,
     };
 
@@ -199,12 +276,20 @@ class _CheckoutViewState extends State<CheckoutView> {
         await cart.clearAllItems();
         if (!mounted) return;
 
-        final orderId = responseObj['data']?['orderId']?.toString() ?? '';
+        final rawOrderId = responseObj['data']?['order_id'] 
+            ?? responseObj['data']?['id'] 
+            ?? responseObj['data']?['orderId'];
+        final orderId = rawOrderId?.toString() ?? '';
+        
         if (orderId.isNotEmpty) {
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (_) => OrderTrackingView(orderId: orderId)),
-            (route) => route.isFirst,
+            MaterialPageRoute(builder: (_) => const MainTabView()),
+            (route) => false,
+          );
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => OrderSuccessView(orderId: orderId)),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -221,7 +306,11 @@ class _CheckoutViewState extends State<CheckoutView> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
           );
-          Navigator.popUntil(context, (route) => route.isFirst);
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const MainTabView()),
+            (route) => false,
+          );
         }
       },
       failure: (err) async {
@@ -242,6 +331,22 @@ class _CheckoutViewState extends State<CheckoutView> {
     );
   }
 
+  /// Maps UI payment method values to API-expected strings.
+  String _mapPaymentMethod(String uiValue) {
+    switch (uiValue) {
+      case 'cash_on_delivery':
+        return 'cash';
+      case 'upi':
+        return 'upi';
+      case 'card':
+        return 'card';
+      case 'online':
+        return 'online';
+      default:
+        return uiValue;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final cart = context.watch<CartProvider>();
@@ -254,6 +359,9 @@ class _CheckoutViewState extends State<CheckoutView> {
     final bottomPad = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      resizeToAvoidBottomInset: true,
       backgroundColor: TColor.background,
       appBar: AppBar(
         backgroundColor: TColor.white,
@@ -382,7 +490,7 @@ class _CheckoutViewState extends State<CheckoutView> {
   }) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: TColor.white,
         borderRadius: BorderRadius.circular(14),
@@ -695,16 +803,10 @@ class _CheckoutViewState extends State<CheckoutView> {
   // ─── Sticky Place Order ───
   Widget _buildStickyOrderBar(double grandTotal, double bottomPad) {
     return Container(
-      padding: EdgeInsets.fromLTRB(16, 12, 16, 12 + bottomPad),
+      padding: EdgeInsets.fromLTRB(16, 14, 16, 14 + bottomPad),
       decoration: BoxDecoration(
         color: TColor.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 12,
-            offset: const Offset(0, -4),
-          ),
-        ],
+        boxShadow: TColor.stickyBarShadow,
       ),
       child: isPlacingOrder
           ? Center(

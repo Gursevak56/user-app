@@ -3,6 +3,7 @@ import 'package:food_delivery/common/color_extension.dart';
 import 'package:food_delivery/common/extension.dart';
 import 'package:food_delivery/common_widget/round_button.dart';
 import 'package:food_delivery/view/login/new_password_view.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:otp_pin_field/otp_pin_field.dart';
 
 import '../../common/globs.dart';
@@ -23,140 +24,141 @@ class _OTPViewState extends State<OTPView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      resizeToAvoidBottomInset: true,
+      backgroundColor: TColor.white,
+      appBar: AppBar(
+        backgroundColor: TColor.white,
+        scrolledUnderElevation: 0,
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+        ),
+      ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 25),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 25),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(
-                height: 64,
+              const SizedBox(height: 20),
+
+              // Icon
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                decoration: BoxDecoration(
+                  color: TColor.primaryLight,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.mark_email_read_rounded,
+                  size: 44,
+                  color: TColor.primary,
+                ),
               ),
+
+              const SizedBox(height: 24),
+
               Text(
-                "We have sent an OTP to your email",
+                "Verify Your Email",
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: TColor.primaryText,
-                    fontSize: 30,
-                    fontWeight: FontWeight.w800),
+                style: GoogleFonts.plusJakartaSans(
+                  color: TColor.primaryText,
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-              const SizedBox(
-                height: 15,
-              ),
+              const SizedBox(height: 10),
               Text(
-                "Please check your email ${widget.email}\ncontinue to reset your password",
+                "We've sent a 6-digit code to",
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: TColor.secondaryText,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500),
+                style: GoogleFonts.plusJakartaSans(
+                  color: TColor.secondaryText,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-              const SizedBox(
+              const SizedBox(height: 4),
+              Text(
+                widget.email,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.plusJakartaSans(
+                  color: TColor.primary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+
+              const SizedBox(height: 40),
+
+              SizedBox(
                 height: 60,
-              ),
-
-              SizedBox(height: 60, child: OtpPinField(
-                    key: _otpPinFieldController,
-                    autoFillEnable: true,
-
-                    ///for Ios it is not needed as the SMS autofill is provided by default, but not for Android, that's where this key is useful.
-                    textInputAction: TextInputAction.done,
-
-                    ///in case you want to change the action of keyboard
-                    /// to clear the Otp pin Controller
-                    onSubmit: (newCode) {
-                      code = newCode;
-                      btnSubmit();
-                      /// return the entered pin
-                    },
-                    onChange: (newCode) {
-                      code = newCode;
-
-                      /// return the entered pin
-                    },
-                    onCodeChanged: (newCode) {
-                      code = newCode;
-                    },
-
-                    fieldWidth: 40,
-
-                    /// to decorate your Otp_Pin_Field
-                    otpPinFieldStyle: OtpPinFieldStyle(
-
-                        /// border color for inactive/unfocused Otp_Pin_Field
-                        defaultFieldBorderColor: Colors.transparent,
-
-                        /// border color for active/focused Otp_Pin_Field
-                        activeFieldBorderColor: Colors.transparent,
-
-                        /// Background Color for inactive/unfocused Otp_Pin_Field
-                        defaultFieldBackgroundColor: TColor.textfield,
-                        activeFieldBackgroundColor: TColor.textfield
-
-                        /// Background Color for active/focused Otp_Pin_Field
-                        ),
-                    maxLength: 6,
-
-                    /// no of pin field
-                    showCursor: true,
-
-                    /// bool to show cursor in pin field or not
-                    cursorColor: TColor.placeholder,
-
-                    /// to choose cursor color
-                    upperChild: const Column(
-                      children: [
-                        SizedBox(height: 30),
-                        Icon(Icons.flutter_dash_outlined, size: 150),
-                        SizedBox(height: 20),
-                      ],
-                    ),
-                    showCustomKeyboard: false,
-
-                    ///bool which manage to show custom keyboard
-                    // customKeyboard: Container(),  /// Widget which help you to show your own custom keyboard in place if default custom keyboard
-                    // showDefaultKeyboard: true,  ///bool which manage to show default OS keyboard
-                    cursorWidth: 3,
-
-                    /// to select cursor width
-                    mainAxisAlignment: MainAxisAlignment.center,
-
-                    /// place otp pin field according to yourselft
-
-                    /// predefine decorate of pinField use  OtpPinFieldDecoration.defaultPinBoxDecoration||OtpPinFieldDecoration.underlinedPinBoxDecoration||OtpPinFieldDecoration.roundedPinBoxDecoration
-                    ///use OtpPinFieldDecoration.custom  (by using this you can make Otp_Pin_Field according to yourself like you can give fieldBorderRadius,fieldBorderWidth and etc things)
-                    otpPinFieldDecoration:
-                        OtpPinFieldDecoration.defaultPinBoxDecoration),),
-
-              
-              const SizedBox(
-                height: 30,
-              ),
-              RoundButton(
-                  title: "Next",
-                  onPressed: () {
+                child: OtpPinField(
+                  key: _otpPinFieldController,
+                  autoFillEnable: true,
+                  textInputAction: TextInputAction.done,
+                  onSubmit: (newCode) {
+                    code = newCode;
                     btnSubmit();
-                  }),
-                TextButton(
+                  },
+                  onChange: (newCode) {
+                    code = newCode;
+                  },
+                  onCodeChanged: (newCode) {
+                    code = newCode;
+                  },
+                  fieldWidth: 44,
+                  otpPinFieldStyle: OtpPinFieldStyle(
+                    defaultFieldBorderColor: TColor.border,
+                    activeFieldBorderColor: TColor.primary,
+                    defaultFieldBackgroundColor: TColor.textfield,
+                    activeFieldBackgroundColor: TColor.primaryLight,
+                    fieldBorderRadius: 12,
+                  ),
+                  maxLength: 6,
+                  showCursor: true,
+                  cursorColor: TColor.primary,
+                  showCustomKeyboard: false,
+                  cursorWidth: 2,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  otpPinFieldDecoration:
+                      OtpPinFieldDecoration.defaultPinBoxDecoration,
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              RoundButton(
+                title: "Verify Code",
+                onPressed: () => btnSubmit(),
+              ),
+
+              const SizedBox(height: 10),
+
+              TextButton(
                 onPressed: () {
-                   serviceCallForgotRequest({"email": widget.email});
+                  serviceCallForgotRequest({"email": widget.email});
                 },
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      "Didn't Received? ",
-                      style: TextStyle(
-                          color: TColor.secondaryText,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500),
+                      "Didn't receive? ",
+                      style: GoogleFonts.plusJakartaSans(
+                        color: TColor.secondaryText,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     Text(
-                      "Click Here",
-                      style: TextStyle(
-                          color: TColor.primary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700),
+                      "Resend Code",
+                      style: GoogleFonts.plusJakartaSans(
+                        color: TColor.primary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ],
                 ),
@@ -168,7 +170,6 @@ class _OTPViewState extends State<OTPView> {
     );
   }
 
-   //TODO: Action
   void btnSubmit() {
     if (code.length != 6) {
       mdShowAlert(Globs.appName, MSG.enterCode, () {});
@@ -179,8 +180,6 @@ class _OTPViewState extends State<OTPView> {
 
     serviceCallForgotVerify({"email": widget.email, "reset_code": code});
   }
-
-  //TODO: ServiceCall
 
   void serviceCallForgotVerify(Map<String, dynamic> parameter) {
     Globs.showHUD();
@@ -193,7 +192,7 @@ class _OTPViewState extends State<OTPView> {
         Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => NewPasswordView(nObj: payloadObj,)));
+                builder: (context) => NewPasswordView(nObj: payloadObj)));
       } else {
         mdShowAlert(Globs.appName,
             responseObj[KKey.message] as String? ?? MSG.fail, () {});
@@ -211,9 +210,7 @@ class _OTPViewState extends State<OTPView> {
         withSuccess: (responseObj) async {
       Globs.hideHUD();
       if (responseObj[KKey.status] == "1") {
-         mdShowAlert(Globs.appName,
-            "reset code successfully", () {});
-       
+        mdShowAlert(Globs.appName, "Reset code sent successfully", () {});
       } else {
         mdShowAlert(Globs.appName,
             responseObj[KKey.message] as String? ?? MSG.fail, () {});

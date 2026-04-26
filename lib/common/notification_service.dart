@@ -41,10 +41,10 @@ class NotificationService {
       {"device_token": token, "platform": platform},
       "$_notifUrl/device-token",
       isToken: true,
-      withSuccess: (res) {
+      withSuccess: (res) async {
         debugPrint("Token registered successfully");
       },
-      failure: (err) {
+      failure: (err) async {
         debugPrint("Failed to register token: $err");
       },
     );
@@ -52,13 +52,13 @@ class NotificationService {
 
   static Future<void> removeDeviceToken(String token) async {
     await ServiceCall.delete(
-      {"device_token": token},
       "$_notifUrl/device-token",
+      body: {"device_token": token},
       isToken: true,
-      withSuccess: (res) {
+      withSuccess: (res) async {
         debugPrint("Token removed successfully");
       },
-      failure: (err) {
+      failure: (err) async {
         debugPrint("Failed to remove token: $err");
       },
     );
@@ -69,7 +69,7 @@ class NotificationService {
     await ServiceCall.get(
       "$_notifUrl?page=$page&limit=20",
       isToken: true,
-      withSuccess: (res) {
+      withSuccess: (res) async {
         if (res[KKey.statusCode] == 200) {
           final data = res["data"] as Map<String, dynamic>? ?? {};
           final items = data["items"] as List? ?? [];
@@ -80,25 +80,25 @@ class NotificationService {
           onFailure(res[KKey.message] ?? "Failed to fetch notifications");
         }
       },
-      failure: (err) {
+      failure: (err) async {
         onFailure(err.toString());
       },
     );
   }
 
   static Future<void> markAsRead(String id, Function() onSuccess, Function(String) onFailure) async {
-    await ServiceCall.patch(
-      {},
+    await ServiceCall.put(
       "$_notifUrl/$id/read",
+      body: {},
       isToken: true,
-      withSuccess: (res) {
+      withSuccess: (res) async {
         if (res[KKey.statusCode] == 200) {
           onSuccess();
         } else {
           onFailure(res[KKey.message] ?? "Failed");
         }
       },
-      failure: (err) {
+      failure: (err) async {
         onFailure(err.toString());
       },
     );

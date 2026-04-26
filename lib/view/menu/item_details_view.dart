@@ -164,6 +164,9 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
     final bottomPad = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      resizeToAvoidBottomInset: true,
       backgroundColor: TColor.white,
       body: Column(
         children: [
@@ -514,52 +517,65 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                             // Quantity selector
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 24),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    'Quantity',
-                                    style: GoogleFonts.plusJakartaSans(
-                                      color: TColor.primaryText,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  _buildQtyButton(
-                                    icon: Icons.remove_rounded,
-                                    onTap: () {
-                                      if (qty > 1) setState(() => qty--);
-                                    },
-                                  ),
-                                  AnimatedSwitcher(
-                                    duration: const Duration(milliseconds: 200),
-                                    switchInCurve: Curves.easeInOut,
-                                    switchOutCurve: Curves.easeInOut,
-                                    transitionBuilder: (child, animation) =>
-                                        ScaleTransition(scale: animation, child: child),
-                                    child: Container(
-                                      key: ValueKey(qty),
-                                      margin: const EdgeInsets.symmetric(horizontal: 14),
-                                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                                      decoration: BoxDecoration(
-                                        border: Border.all(color: TColor.border),
-                                        borderRadius: BorderRadius.circular(10),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                decoration: BoxDecoration(
+                                  color: TColor.textfield,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.restaurant_rounded, color: TColor.primary, size: 18),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      'Quantity',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        color: TColor.primaryText,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
                                       ),
-                                      child: Text(
-                                        qty.toString(),
-                                        style: GoogleFonts.plusJakartaSans(
-                                          color: TColor.primaryText,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w700,
+                                    ),
+                                    const Spacer(),
+                                    _buildQtyButton(
+                                      icon: Icons.remove_rounded,
+                                      onTap: () {
+                                        if (qty > 1) setState(() => qty--);
+                                      },
+                                      isEnabled: qty > 1,
+                                    ),
+                                    AnimatedSwitcher(
+                                      duration: const Duration(milliseconds: 200),
+                                      switchInCurve: Curves.easeInOut,
+                                      switchOutCurve: Curves.easeInOut,
+                                      transitionBuilder: (child, animation) =>
+                                          ScaleTransition(scale: animation, child: child),
+                                      child: Container(
+                                        key: ValueKey(qty),
+                                        margin: const EdgeInsets.symmetric(horizontal: 12),
+                                        width: 44,
+                                        height: 36,
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                          color: TColor.white,
+                                          borderRadius: BorderRadius.circular(10),
+                                          border: Border.all(color: TColor.border),
+                                        ),
+                                        child: Text(
+                                          qty.toString(),
+                                          style: GoogleFonts.plusJakartaSans(
+                                            color: TColor.primaryText,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w800,
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                  _buildQtyButton(
-                                    icon: Icons.add_rounded,
-                                    onTap: () => setState(() => qty++),
-                                  ),
-                                ],
+                                    _buildQtyButton(
+                                      icon: Icons.add_rounded,
+                                      onTap: () => setState(() => qty++),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
 
@@ -573,7 +589,9 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
 
                 // Top bar
                 SafeArea(
-                  child: Padding(
+      top: false,
+      bottom: true,
+      child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -604,28 +622,16 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
 
           // ─── Sticky Add to Cart CTA ───
           Container(
-            padding: EdgeInsets.fromLTRB(20, 12, 20, 12 + bottomPad),
+            padding: EdgeInsets.fromLTRB(20, 14, 20, 14 + bottomPad),
             decoration: BoxDecoration(
               color: TColor.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 12,
-                  offset: const Offset(0, -4),
-                ),
-              ],
+              boxShadow: TColor.stickyBarShadow,
             ),
             child: Container(
               decoration: BoxDecoration(
-                color: TColor.primary,
+                gradient: TColor.premiumGradient,
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: TColor.primary.withOpacity(0.35),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
+                boxShadow: TColor.ctaShadow,
               ),
               child: Material(
                 color: Colors.transparent,
@@ -634,7 +640,7 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                   onTap: _addToCart,
                   borderRadius: BorderRadius.circular(16),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -645,8 +651,9 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                             Text(
                               '$qty ${qty > 1 ? 'items' : 'item'}',
                               style: GoogleFonts.plusJakartaSans(
-                                color: Colors.white70,
+                                color: Colors.white.withOpacity(0.75),
                                 fontSize: 12,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                             const SizedBox(height: 2),
@@ -654,36 +661,36 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                               '₹${_totalPrice.toStringAsFixed(0)}',
                               style: GoogleFonts.plusJakartaSans(
                                 color: Colors.white,
-                                fontSize: 20,
+                                fontSize: 22,
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
                           ],
                         ),
-                        Row(
-                          children: [
-                            Text(
-                              'Add to Cart',
-                              style: GoogleFonts.plusJakartaSans(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            children: [
+                              Text(
+                                'Add to Cart',
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                color: Colors.white24,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: const Icon(
-                                Icons.shopping_bag_rounded,
+                              const SizedBox(width: 6),
+                              const Icon(
+                                Icons.arrow_forward_rounded,
                                 color: Colors.white,
                                 size: 18,
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -700,12 +707,13 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
   Widget _buildQtyButton({
     required IconData icon,
     required VoidCallback onTap,
+    bool isEnabled = true,
   }) {
     return Material(
-      color: TColor.primary,
+      color: isEnabled ? TColor.primary : TColor.primary.withOpacity(0.4),
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
-        onTap: onTap,
+        onTap: isEnabled ? onTap : null,
         borderRadius: BorderRadius.circular(10),
         child: Container(
           width: 36,
@@ -725,17 +733,19 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        Material(
-          color: Colors.black.withOpacity(0.35),
+        ClipRRect(
           borderRadius: BorderRadius.circular(12),
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              width: 40,
-              height: 40,
-              alignment: Alignment.center,
-              child: Icon(icon, color: Colors.white, size: 20),
+          child: Material(
+            color: Colors.white.withOpacity(0.9),
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                width: 42,
+                height: 42,
+                alignment: Alignment.center,
+                child: Icon(icon, color: TColor.primaryText, size: 20),
+              ),
             ),
           ),
         ),

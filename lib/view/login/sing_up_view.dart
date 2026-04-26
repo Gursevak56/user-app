@@ -1,5 +1,3 @@
-// lib/view/login/sign_up_view.dart
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:food_delivery/common/color_extension.dart';
 import 'package:food_delivery/common/extension.dart';
@@ -34,32 +32,26 @@ class _SignUpViewState extends State<SignUpView> {
       mdShowAlert(Globs.appName, MSG.enterName, () {});
       return;
     }
-
     if (txtLastName.text.isEmpty) {
       mdShowAlert(Globs.appName, MSG.enterName, () {});
       return;
     }
-
     if (!txtEmail.text.isEmail) {
       mdShowAlert(Globs.appName, MSG.enterEmail, () {});
       return;
     }
-
     if (txtMobile.text.isEmpty) {
       mdShowAlert(Globs.appName, MSG.enterMobile, () {});
       return;
     }
-
     if (txtAddress.text.isEmpty) {
       mdShowAlert(Globs.appName, MSG.enterAddress, () {});
       return;
     }
-
     if (txtPassword.text.length < 6) {
       mdShowAlert(Globs.appName, MSG.enterPassword, () {});
       return;
     }
-
     if (txtPassword.text != txtConfirmPassword.text) {
       mdShowAlert(Globs.appName, MSG.enterPasswordNotMatch, () {});
       return;
@@ -120,33 +112,55 @@ class _SignUpViewState extends State<SignUpView> {
     );
   }
 
+  Future<void> _requestPermissions() async {
+    try {
+      await Permission.locationWhenInUse.request();
+      await Permission.notification.request();
+    } catch (e) {
+      debugPrint("Error requesting permissions: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      resizeToAvoidBottomInset: true,
       backgroundColor: TColor.white,
+      appBar: AppBar(
+        backgroundColor: TColor.white,
+        scrolledUnderElevation: 0,
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+        ),
+      ),
       body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 25),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 25),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 64),
+              const SizedBox(height: 10),
               // App icon
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 decoration: BoxDecoration(
                   color: TColor.primaryLight,
-                  borderRadius: BorderRadius.circular(18),
+                  shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.person_add_alt_1_rounded,
-                  size: 36,
+                  size: 40,
                   color: TColor.primary,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               Text(
-                "Sign Up",
+                "Create Account",
                 style: GoogleFonts.plusJakartaSans(
                   color: TColor.primaryText,
                   fontSize: 28,
@@ -155,51 +169,51 @@ class _SignUpViewState extends State<SignUpView> {
               ),
               const SizedBox(height: 6),
               Text(
-                "Add your details to sign up",
+                "Sign up to get started",
                 style: GoogleFonts.plusJakartaSans(
                   color: TColor.secondaryText,
-                  fontSize: 14,
+                  fontSize: 15,
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 36),
               RoundTextfield(
                 hintText: "First Name",
                 controller: txtFirstName,
                 left: Icon(Icons.person_outline_rounded,
                     color: TColor.placeholder, size: 20),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
               RoundTextfield(
                 hintText: "Last Name",
                 controller: txtLastName,
                 left: Icon(Icons.person_outline_rounded,
                     color: TColor.placeholder, size: 20),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
               RoundTextfield(
-                hintText: "Email",
+                hintText: "Email Address",
                 controller: txtEmail,
                 keyboardType: TextInputType.emailAddress,
                 left: Icon(Icons.email_outlined,
                     color: TColor.placeholder, size: 20),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
               RoundTextfield(
-                hintText: "Mobile No",
+                hintText: "Mobile Number",
                 controller: txtMobile,
                 keyboardType: TextInputType.phone,
                 left: Icon(Icons.phone_outlined,
                     color: TColor.placeholder, size: 20),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
               RoundTextfield(
-                hintText: "Address",
+                hintText: "Delivery Address",
                 controller: txtAddress,
                 left: Icon(Icons.location_on_outlined,
                     color: TColor.placeholder, size: 20),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
               RoundTextfield(
                 hintText: "Password",
                 controller: txtPassword,
@@ -207,7 +221,7 @@ class _SignUpViewState extends State<SignUpView> {
                 left: Icon(Icons.lock_outline_rounded,
                     color: TColor.placeholder, size: 20),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
               RoundTextfield(
                 hintText: "Confirm Password",
                 controller: txtConfirmPassword,
@@ -215,26 +229,34 @@ class _SignUpViewState extends State<SignUpView> {
                 left: Icon(Icons.lock_outline_rounded,
                     color: TColor.placeholder, size: 20),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   color: TColor.primaryLight,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: Text(
-                  "User Type: Customer",
-                  style: GoogleFonts.plusJakartaSans(
-                    color: TColor.primary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.check_circle_rounded,
+                        color: TColor.primary, size: 16),
+                    const SizedBox(width: 8),
+                    Text(
+                      "Customer Account",
+                      style: GoogleFonts.plusJakartaSans(
+                        color: TColor.primary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 28),
               RoundButton(
                 title: "Sign Up",
-                onPressed: () => {btnSignUp()},
+                onPressed: () => btnSignUp(),
               ),
               const SizedBox(height: 24),
               TextButton(
@@ -266,19 +288,11 @@ class _SignUpViewState extends State<SignUpView> {
                   ],
                 ),
               ),
+              const SizedBox(height: 20),
             ],
           ),
         ),
       ),
     );
-  }
-
-  Future<void> _requestPermissions() async {
-    try {
-      await Permission.locationWhenInUse.request();
-      await Permission.notification.request();
-    } catch (e) {
-      debugPrint("Error requesting permissions: $e");
-    }
   }
 }

@@ -137,7 +137,7 @@ class FoodRestList extends StatelessWidget {
                         height: 30,
                         width: 60,
                         borderRadius: BorderRadius.circular(6),
-                        gradient: TColor.groceryTabGradient,
+                        gradient: TColor.foodTabGradient,
                       )
                     ],
                   )

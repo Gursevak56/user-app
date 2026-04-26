@@ -6,12 +6,13 @@ import '../../common/color_extension.dart';
 import '../../common/globs.dart';
 import '../../common/service_call.dart';
 import '../../common_widget/round_textfield.dart';
-import '../../common_widget/favorite_toggle_btn.dart';
+import '../../common_widget/shimmer_block.dart';
 import '../more/my_order_view.dart';
 import 'menu_items_view.dart';
 
 class MenuView extends StatefulWidget {
-  const MenuView({super.key});
+  final Map? rObj;
+  const MenuView({super.key, this.rObj});
 
   @override
   State<MenuView> createState() => _MenuViewState();
@@ -49,11 +50,8 @@ class _MenuViewState extends State<MenuView> {
   void _fetchRestaurants() async {
     final lat = Globs.udValueDouble(Globs.userLat).toString();
     final lng = Globs.udValueDouble(Globs.userLng).toString();
-    
-    final params = <String, String>{
-      "page": "1",
-      "limit": "20"
-    };
+
+    final params = <String, String>{"page": "1", "limit": "20"};
     if (lat != "0.0" && lng != "0.0") {
       params['lat'] = lat;
       params['lng'] = lng;
@@ -76,7 +74,9 @@ class _MenuViewState extends State<MenuView> {
       },
       failure: (err) async {
         if (mounted) {
-          setState(() { isLoading = false; });
+          setState(() {
+            isLoading = false;
+          });
         }
       },
     );
@@ -85,40 +85,52 @@ class _MenuViewState extends State<MenuView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      resizeToAvoidBottomInset: true,
       backgroundColor: TColor.background,
       appBar: AppBar(
         backgroundColor: TColor.white,
         scrolledUnderElevation: 0,
         elevation: 0,
-        automaticallyImplyLeading: false,
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+        ),
         title: Text(
           "Restaurants",
           style: GoogleFonts.plusJakartaSans(
             color: TColor.primaryText,
-            fontSize: 22,
+            fontSize: 20,
             fontWeight: FontWeight.w800,
           ),
         ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12.0),
-            child: IconButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const MyOrderView()),
-                );
-              },
-              icon: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: TColor.primaryLight,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.shopping_bag_outlined,
-                  size: 22,
-                  color: TColor.primary,
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const MyOrderView()),
+                  );
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: TColor.primaryLight,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.shopping_bag_rounded,
+                    size: 20,
+                    color: TColor.primary,
+                  ),
                 ),
               ),
             ),
@@ -130,9 +142,9 @@ class _MenuViewState extends State<MenuView> {
           // Search bar
           Container(
             color: TColor.white,
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
             child: RoundTextfield(
-              hintText: "Search restaurants",
+              hintText: "Search restaurants...",
               controller: txtSearch,
               left: Icon(Icons.search_rounded,
                   color: TColor.placeholder, size: 22),
@@ -141,10 +153,13 @@ class _MenuViewState extends State<MenuView> {
           // Restaurant list
           Expanded(
             child: isLoading
-                ? Center(
-                    child: CircularProgressIndicator(
-                      color: TColor.primary,
-                      strokeWidth: 2.5,
+                ? SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        children: List.generate(
+                            4, (_) => const ShimmerRestaurantCard()),
+                      ),
                     ),
                   )
                 : _filteredMenuArr.isEmpty
@@ -153,32 +168,43 @@ class _MenuViewState extends State<MenuView> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(20),
+                              padding: const EdgeInsets.all(24),
                               decoration: BoxDecoration(
                                 color: TColor.primaryLight,
                                 shape: BoxShape.circle,
                               ),
-                              child: Icon(Icons.restaurant_rounded,
-                                  size: 40, color: TColor.primary),
+                              child: Icon(Icons.search_off_rounded,
+                                  size: 48, color: TColor.primary),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 20),
                             Text(
                               "No restaurants found",
                               style: GoogleFonts.plusJakartaSans(
+                                color: TColor.primaryText,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              "Try a different search",
+                              style: GoogleFonts.plusJakartaSans(
                                 color: TColor.secondaryText,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
+                                fontSize: 14,
                               ),
                             ),
                           ],
                         ),
                       )
                     : ListView.builder(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        physics: const BouncingScrollPhysics(),
                         itemCount: _filteredMenuArr.length,
                         itemBuilder: ((context, index) {
-                          var mObj = _filteredMenuArr[index] as Map? ?? {};
-                          final imageUrl = mObj["image_url"]?.toString() ?? "";
+                          var mObj =
+                              _filteredMenuArr[index] as Map? ?? {};
+                          final imageUrl =
+                              mObj["image_url"]?.toString() ?? "";
                           final isNetwork = imageUrl.startsWith("http");
 
                           return GestureDetector(
@@ -196,61 +222,60 @@ class _MenuViewState extends State<MenuView> {
                               margin: const EdgeInsets.only(bottom: 14),
                               decoration: BoxDecoration(
                                 color: TColor.white,
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.05),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
+                                borderRadius: BorderRadius.circular(18),
+                                boxShadow: TColor.cardShadow,
                               ),
                               child: Row(
                                 children: [
                                   // Image
                                   ClipRRect(
-                                    borderRadius: const BorderRadius.horizontal(
-                                      left: Radius.circular(16),
+                                    borderRadius:
+                                        const BorderRadius.horizontal(
+                                      left: Radius.circular(18),
                                     ),
                                     child: SizedBox(
-                                      width: 100,
-                                      height: 100,
+                                      width: 105,
+                                      height: 105,
                                       child: isNetwork
                                           ? CachedNetworkImage(
                                               imageUrl: imageUrl,
                                               fit: BoxFit.cover,
                                               placeholder: (_, __) =>
                                                   Container(
-                                                color: TColor.primaryLight,
+                                                color: TColor.textfield,
                                                 child: Center(
                                                   child: Icon(
-                                                    Icons.restaurant_rounded,
-                                                    color: TColor.primary
-                                                        .withOpacity(0.3),
+                                                    Icons
+                                                        .restaurant_rounded,
+                                                    color: TColor
+                                                        .placeholder,
                                                     size: 28,
                                                   ),
                                                 ),
                                               ),
-                                              errorWidget: (_, __, ___) =>
-                                                  Container(
-                                                color: TColor.primaryLight,
+                                              errorWidget:
+                                                  (_, __, ___) =>
+                                                      Container(
+                                                color: TColor.textfield,
                                                 child: Center(
                                                   child: Icon(
-                                                    Icons.restaurant_rounded,
-                                                    color: TColor.primary
-                                                        .withOpacity(0.3),
+                                                    Icons
+                                                        .restaurant_rounded,
+                                                    color: TColor
+                                                        .placeholder,
                                                     size: 28,
                                                   ),
                                                 ),
                                               ),
                                             )
                                           : Container(
-                                              color: TColor.primaryLight,
+                                              color: TColor.textfield,
                                               child: Center(
                                                 child: Icon(
-                                                  Icons.restaurant_rounded,
-                                                  color: TColor.primary
-                                                      .withOpacity(0.3),
+                                                  Icons
+                                                      .restaurant_rounded,
+                                                  color:
+                                                      TColor.placeholder,
                                                   size: 28,
                                                 ),
                                               ),
@@ -260,8 +285,10 @@ class _MenuViewState extends State<MenuView> {
                                   // Info
                                   Expanded(
                                     child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 14, vertical: 12),
+                                      padding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 14,
+                                              vertical: 12),
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
@@ -269,60 +296,73 @@ class _MenuViewState extends State<MenuView> {
                                           Text(
                                             mObj["name"]?.toString() ??
                                                 "Restaurant",
-                                            style:
-                                                GoogleFonts.plusJakartaSans(
+                                            style: GoogleFonts
+                                                .plusJakartaSans(
                                               color: TColor.primaryText,
                                               fontSize: 16,
                                               fontWeight: FontWeight.w700,
                                             ),
                                             maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
+                                            overflow:
+                                                TextOverflow.ellipsis,
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
-                                            mObj["cuisine"]?.toString() ??
+                                            mObj["cuisine"]
+                                                    ?.toString() ??
                                                 "Various",
-                                            style:
-                                                GoogleFonts.plusJakartaSans(
-                                              color: TColor.secondaryText,
+                                            style: GoogleFonts
+                                                .plusJakartaSans(
+                                              color:
+                                                  TColor.secondaryText,
                                               fontSize: 13,
                                             ),
                                             maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
+                                            overflow:
+                                                TextOverflow.ellipsis,
                                           ),
-                                          const SizedBox(height: 8),
+                                          const SizedBox(height: 10),
                                           Row(
                                             children: [
                                               Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 6,
-                                                        vertical: 3),
-                                                decoration: BoxDecoration(
-                                                  color: TColor.success,
+                                                padding: const EdgeInsets
+                                                    .symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 3),
+                                                decoration:
+                                                    BoxDecoration(
+                                                  color: const Color(
+                                                          0xFFFFC107)
+                                                      .withOpacity(
+                                                          0.15),
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          5),
+                                                      BorderRadius
+                                                          .circular(6),
                                                 ),
                                                 child: Row(
                                                   mainAxisSize:
                                                       MainAxisSize.min,
                                                   children: [
                                                     const Icon(
-                                                        Icons.star_rounded,
-                                                        color: Colors.white,
-                                                        size: 12),
-                                                    const SizedBox(width: 2),
+                                                        Icons
+                                                            .star_rounded,
+                                                        color: Color(
+                                                            0xFFFFC107),
+                                                        size: 14),
+                                                    const SizedBox(
+                                                        width: 3),
                                                     Text(
                                                       mObj["rating"]
                                                               ?.toString() ??
                                                           "0",
                                                       style: GoogleFonts
                                                           .plusJakartaSans(
-                                                        color: Colors.white,
-                                                        fontSize: 11,
+                                                        color: TColor
+                                                            .primaryText,
+                                                        fontSize: 12,
                                                         fontWeight:
-                                                            FontWeight.w700,
+                                                            FontWeight
+                                                                .w700,
                                                       ),
                                                     ),
                                                   ],
@@ -333,8 +373,8 @@ class _MenuViewState extends State<MenuView> {
                                                   Icons
                                                       .arrow_forward_ios_rounded,
                                                   size: 14,
-                                                  color:
-                                                      TColor.placeholder),
+                                                  color: TColor
+                                                      .placeholder),
                                             ],
                                           ),
                                         ],

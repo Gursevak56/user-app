@@ -46,7 +46,13 @@ class Globs {
   }
 
   static dynamic udValue(String key) {
-    return json.decode(prefs?.get(key) as String? ?? "{}");
+    try {
+      final raw = prefs?.get(key) as String? ?? "{}";
+      return json.decode(raw);
+    } catch (e) {
+      if (kDebugMode) print('udValue decode error for key=$key: $e');
+      return {};
+    }
   }
 
   static String udValueString(String key) {
@@ -138,6 +144,11 @@ class SVKey {
 
   // Order endpoint
   static const onlineOrderUrl = '$restaurantBaseUrl/api/orders/online';
+  static String trackOrderUrl(String orderId) => '$restaurantBaseUrl/api/orders/$orderId/track';
+  static String wsOrderStatus(String sessionId, String orderId) {
+    final wsBase = restaurantBaseUrl.replaceFirst('http', 'ws');
+    return '$wsBase/ws/orders/status?session_id=$sessionId&order_id=$orderId';
+  }
 }
 
 class KKey {

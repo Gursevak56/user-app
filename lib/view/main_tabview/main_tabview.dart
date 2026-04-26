@@ -38,6 +38,9 @@ class _MainTabViewState extends State<MainTabView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      resizeToAvoidBottomInset: true,
       body: PageStorage(bucket: storageBucket, child: selectPageView),
       backgroundColor: TColor.background,
       bottomNavigationBar: Container(
@@ -46,18 +49,16 @@ class _MainTabViewState extends State<MainTabView> {
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.06),
-              blurRadius: 12,
-              offset: const Offset(0, -2),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
             ),
           ],
         ),
-        child: BottomAppBar(
-          shape: const CircularNotchedRectangle(),
-          notchMargin: 8,
-          height: 64,
-          elevation: 0,
-          color: TColor.white,
-          child: SafeArea(
+        child: SafeArea(
+      top: false,
+      bottom: true,
+      child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [

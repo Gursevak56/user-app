@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:food_delivery/common/color_extension.dart';
 import 'package:food_delivery/common/order_tracking_service.dart';
+import 'package:food_delivery/common/order_tracking_socket.dart';
+import 'package:food_delivery/models/order_tracking_model.dart';
 
 class OrderTrackingView extends StatefulWidget {
   final String orderId;
@@ -17,58 +20,120 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
   GoogleMapController? _mapController;
   Timer? _pollTimer;
   bool _isLoading = true;
+  bool _isSocketConnected = false;
+  OrderTrackingSocket? _socket;
 
-  // Tracking data
-  String _orderStatus = 'confirmed';
+  DeliveryStatus _orderStatus = DeliveryStatus.pending;
   int _etaMinutes = 0;
-  List<Map<String, dynamic>> _timeline = [];
-  Map<String, dynamic>? _rider;
+  List<TrackingTimelineItem> _timeline = [];
+  RiderInfo? _rider;
   Map<String, dynamic>? _restaurant;
   Map<String, dynamic>? _customer;
 
-  // Map markers
   Set<Marker> _markers = {};
   Set<Polyline> _polylines = {};
 
   @override
   void initState() {
     super.initState();
-    _fetchTracking();
-    // Poll every 5 seconds
-    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      _fetchTracking();
+    _initTracking();
+  }
+
+  void _initTracking() async {
+    await _fetchTrackingData();
+    _connectSocket();
+  }
+
+  Future<void> _fetchTrackingData() async {
+    final data = await OrderTrackingService.fetchTracking(widget.orderId);
+    if (data == null || !mounted) {
+      setState(() => _isLoading = false);
+      return;
+    }
+    _updateStateFromData(data);
+  }
+
+  void _connectSocket() {
+    _socket = OrderTrackingSocket(
+      orderId: widget.orderId,
+      onConnected: () {
+        if (mounted) setState(() {
+          _isSocketConnected = true;
+          _pollTimer?.cancel();
+        });
+      },
+      onDisconnected: () {
+        if (mounted) setState(() {
+          _isSocketConnected = false;
+          _startPolling();
+        });
+      },
+      onMessage: (data) {
+        if (mounted) {
+           if (data['type'] == 'ORDER_STATUS_UPDATED' || data['type'] == 'RIDER_LOCATION_UPDATED' || data['type'] == 'RIDER_ASSIGNED') {
+             _fetchTrackingData();
+             ScaffoldMessenger.of(context).showSnackBar(
+               SnackBar(
+                 content: Text(data['message']?.toString() ?? 'Order updated'),
+                 duration: const Duration(seconds: 2),
+                 backgroundColor: TColor.primary,
+               )
+             );
+           } else {
+             _fetchTrackingData();
+           }
+        }
+      },
+    );
+    _socket?.connect();
+  }
+
+  void _startPolling() {
+    _pollTimer?.cancel();
+    _pollTimer = Timer.periodic(const Duration(seconds: 20), (_) {
+      if (!_isSocketConnected) {
+        _fetchTrackingData();
+      }
     });
   }
 
-  @override
-  void dispose() {
-    _pollTimer?.cancel();
-    _mapController?.dispose();
-    super.dispose();
-  }
-
-  Future<void> _fetchTracking() async {
-    final data = await OrderTrackingService.fetchTracking(widget.orderId);
-    if (data == null || !mounted) return;
-
+  void _updateStateFromData(Map<String, dynamic> data) {
     setState(() {
       _isLoading = false;
-      _orderStatus = data['order_status']?.toString() ?? 'confirmed';
+      
+      final statusStr = data['order_status']?.toString() ?? 'pending';
+      _orderStatus = DeliveryStatus.fromString(statusStr);
       _etaMinutes = (data['eta_minutes'] as num?)?.toInt() ?? 0;
-      _timeline = (data['status_timeline'] as List?)
-              ?.map((e) => Map<String, dynamic>.from(e as Map))
-              .toList() ??
-          [];
-      _rider = data['rider'] as Map<String, dynamic>?;
+      
+      _timeline.clear();
+      final tlList = data['status_timeline'] as List? ?? [];
+      for (var item in tlList) {
+        final m = item as Map;
+        final s = DeliveryStatus.fromString(m['status']?.toString() ?? '');
+        DateTime? time;
+        if (m['time'] != null && m['time'] != 'null') {
+           time = DateTime.tryParse(m['time'].toString())?.toLocal();
+        }
+        _timeline.add(TrackingTimelineItem(
+          status: s,
+          title: s.title,
+          time: time,
+          isDone: m['done'] == true,
+        ));
+      }
+
+      if (data['rider'] != null) {
+        _rider = RiderInfo.fromJson(data['rider'] as Map<String, dynamic>);
+      }
       _restaurant = data['restaurant'] as Map<String, dynamic>?;
       _customer = data['customer'] as Map<String, dynamic>?;
     });
 
     _updateMapMarkers();
 
-    // Stop polling when delivered or cancelled
-    if (_orderStatus == 'delivered' || _orderStatus == 'cancelled') {
+    if (_orderStatus == DeliveryStatus.delivered || _orderStatus == DeliveryStatus.cancelled || _orderStatus == DeliveryStatus.rejected) {
       _pollTimer?.cancel();
+      _socket?.dispose();
     }
   }
 
@@ -76,7 +141,6 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
     final markers = <Marker>{};
     final points = <LatLng>[];
 
-    // Restaurant marker
     if (_restaurant != null) {
       final lat = (_restaurant!['latitude'] as num?)?.toDouble();
       final lng = (_restaurant!['longitude'] as num?)?.toDouble();
@@ -94,7 +158,6 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
       }
     }
 
-    // Customer marker
     if (_customer != null) {
       final lat = (_customer!['latitude'] as num?)?.toDouble();
       final lng = (_customer!['longitude'] as num?)?.toDouble();
@@ -110,25 +173,19 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
       }
     }
 
-    // Rider marker
-    if (_rider != null) {
-      final lat = (_rider!['latitude'] as num?)?.toDouble();
-      final lng = (_rider!['longitude'] as num?)?.toDouble();
-      if (lat != null && lng != null) {
-        final pos = LatLng(lat, lng);
-        points.add(pos);
-        markers.add(Marker(
-          markerId: const MarkerId('rider'),
-          position: pos,
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueViolet),
-          infoWindow: InfoWindow(
-            title: _rider!['name']?.toString() ?? 'Rider',
-          ),
-        ));
-      }
+    if (_rider != null && _rider!.latitude != null && _rider!.longitude != null) {
+      final pos = LatLng(_rider!.latitude!, _rider!.longitude!);
+      points.add(pos);
+      markers.add(Marker(
+        markerId: const MarkerId('rider'),
+        position: pos,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueViolet),
+        infoWindow: InfoWindow(
+          title: _rider!.name,
+        ),
+      ));
     }
 
-    // Simple polyline connecting all points
     final polylines = <Polyline>{};
     if (points.length >= 2) {
       polylines.add(Polyline(
@@ -144,7 +201,6 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
       _polylines = polylines;
     });
 
-    // Fit all markers on screen
     if (_mapController != null && points.length >= 2) {
       final bounds = _boundsFromPoints(points);
       _mapController!.animateCamera(
@@ -172,7 +228,7 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
 
   void _callRider() async {
     if (_rider == null) return;
-    final phone = _rider!['phone']?.toString() ?? '';
+    final phone = _rider!.phone;
     if (phone.isEmpty) return;
     final uri = Uri.parse('tel:+$phone');
     if (await canLaunchUrl(uri)) {
@@ -181,30 +237,41 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
   }
 
   @override
+  void dispose() {
+    _pollTimer?.cancel();
+    _socket?.dispose();
+    _mapController?.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      resizeToAvoidBottomInset: true,
       body: _isLoading
           ? Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CircularProgressIndicator(color: TColor.primary),
+                  CircularProgressIndicator(color: TColor.primary, strokeWidth: 2.5),
                   const SizedBox(height: 16),
                   Text(
                     'Loading order tracking...',
-                    style: TextStyle(color: TColor.secondaryText, fontSize: 14),
+                    style: GoogleFonts.plusJakartaSans(color: TColor.secondaryText, fontSize: 14),
                   ),
                 ],
               ),
             )
           : Stack(
               children: [
-                // Google Map — top portion
+                // Google Map
                 SizedBox(
                   height: MediaQuery.of(context).size.height * 0.55,
                   child: GoogleMap(
                     initialCameraPosition: const CameraPosition(
-                      target: LatLng(29.87, 77.89), // Default center (Roorkee)
+                      target: LatLng(29.87, 77.89),
                       zoom: 14,
                     ),
                     markers: _markers,
@@ -214,7 +281,6 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
                     mapToolbarEnabled: false,
                     onMapCreated: (controller) {
                       _mapController = controller;
-                      // Fit markers after map is ready
                       Future.delayed(const Duration(milliseconds: 500), () {
                         _updateMapMarkers();
                       });
@@ -222,13 +288,38 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
                   ),
                 ),
 
-                // Back button
+                // Back button & Socket Status
                 Positioned(
                   top: MediaQuery.of(context).padding.top + 8,
                   left: 16,
-                  child: _buildCircleButton(
-                    icon: Icons.arrow_back_ios_new,
-                    onTap: () => Navigator.pop(context),
+                  right: 16,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildCircleButton(
+                        icon: Icons.arrow_back_ios_new_rounded,
+                        onTap: () => Navigator.pop(context),
+                      ),
+                      if (!_isSocketConnected && (_orderStatus != DeliveryStatus.delivered && _orderStatus != DeliveryStatus.cancelled && _orderStatus != DeliveryStatus.rejected))
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.6),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            children: [
+                              const SizedBox(
+                                width: 10,
+                                height: 10,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              ),
+                              const SizedBox(width: 8),
+                              Text("Reconnecting...", style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 12)),
+                            ],
+                          ),
+                        )
+                    ],
                   ),
                 ),
 
@@ -242,40 +333,40 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
                       decoration: BoxDecoration(
                         color: TColor.white,
                         borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(24),
+                          top: Radius.circular(28),
                         ),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.1),
-                            blurRadius: 20,
-                            offset: const Offset(0, -5),
+                            blurRadius: 24,
+                            offset: const Offset(0, -6),
                           ),
                         ],
                       ),
                       child: ListView(
                         controller: scrollController,
-                        padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+                        padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
                         children: [
                           // Handle bar
                           Center(
                             child: Container(
-                              width: 40,
-                              height: 4,
+                              width: 44,
+                              height: 5,
                               decoration: BoxDecoration(
-                                color: Colors.grey.shade300,
-                                borderRadius: BorderRadius.circular(2),
+                                color: TColor.border,
+                                borderRadius: BorderRadius.circular(3),
                               ),
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 20),
 
                           // ETA Header
                           _buildEtaHeader(),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 24),
 
                           // Status Timeline
                           _buildStatusTimeline(),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 24),
 
                           // Rider Info
                           if (_rider != null) _buildRiderCard(),
@@ -290,56 +381,66 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
   }
 
   Widget _buildEtaHeader() {
-    final isDelivered = _orderStatus == 'delivered';
-    final isCancelled = _orderStatus == 'cancelled';
+    final isDelivered = _orderStatus == DeliveryStatus.delivered;
+    final isCancelled = _orderStatus == DeliveryStatus.cancelled || _orderStatus == DeliveryStatus.rejected;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
         gradient: isDelivered
-            ? const LinearGradient(colors: [Color(0xFF43A047), Color(0xFF66BB6A)])
+            ? LinearGradient(colors: [TColor.success, TColor.success.withOpacity(0.8)])
             : isCancelled
-                ? const LinearGradient(colors: [Color(0xFFE53935), Color(0xFFEF5350)])
-                : LinearGradient(colors: TColor.primaryGradient),
-        borderRadius: BorderRadius.circular(16),
+                ? LinearGradient(colors: [TColor.error, TColor.error.withOpacity(0.8)])
+                : TColor.premiumGradient,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: (isDelivered ? TColor.success : isCancelled ? TColor.error : TColor.primary).withOpacity(0.3),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          Icon(
-            isDelivered
-                ? Icons.check_circle
-                : isCancelled
-                    ? Icons.cancel
-                    : Icons.delivery_dining,
-            color: Colors.white,
-            size: 36,
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(
+              _orderStatus.icon,
+              color: Colors.white,
+              size: 28,
+            ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   isDelivered
-                      ? 'Delivered!'
+                      ? 'Delivered! 🎉'
                       : isCancelled
                           ? 'Order Cancelled'
                           : 'Arriving in $_etaMinutes min',
-                  style: const TextStyle(
+                  style: GoogleFonts.plusJakartaSans(
                     color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 4),
                 Text(
                   isDelivered
                       ? 'Your order has been delivered'
                       : isCancelled
                           ? 'This order was cancelled'
                           : 'Order #${widget.orderId}',
-                  style: const TextStyle(
-                    color: Colors.white70,
+                  style: GoogleFonts.plusJakartaSans(
+                    color: Colors.white.withOpacity(0.75),
                     fontSize: 13,
                   ),
                 ),
@@ -352,48 +453,27 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
   }
 
   Widget _buildStatusTimeline() {
-    final statusLabels = {
-      'confirmed': 'Order Confirmed',
-      'preparing': 'Preparing',
-      'picked_up': 'Picked Up',
-      'out_for_delivery': 'On the Way',
-      'delivered': 'Delivered',
-    };
-
-    final statusIcons = {
-      'confirmed': Icons.receipt_long,
-      'preparing': Icons.restaurant,
-      'picked_up': Icons.shopping_bag,
-      'out_for_delivery': Icons.delivery_dining,
-      'delivered': Icons.check_circle,
-    };
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Order Status',
-          style: TextStyle(
+          style: GoogleFonts.plusJakartaSans(
             color: TColor.primaryText,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
+            fontSize: 17,
+            fontWeight: FontWeight.w800,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         ...List.generate(_timeline.length, (i) {
           final item = _timeline[i];
-          final status = item['status']?.toString() ?? '';
-          final isDone = item['done'] == true;
+          final isDone = item.isDone;
           final isLast = i == _timeline.length - 1;
-          final time = item['time']?.toString();
+          final time = item.time;
 
           String formattedTime = '';
-          if (time != null && time != 'null') {
-            try {
-              final dt = DateTime.parse(time).toLocal();
-              formattedTime =
-                  '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-            } catch (_) {}
+          if (time != null) {
+            formattedTime = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
           }
 
           return Row(
@@ -403,52 +483,57 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
               Column(
                 children: [
                   Container(
-                    width: 32,
-                    height: 32,
+                    width: 36,
+                    height: 36,
                     decoration: BoxDecoration(
-                      color: isDone
-                          ? TColor.primary
-                          : Colors.grey.shade200,
+                      color: isDone ? TColor.primary : TColor.textfield,
                       shape: BoxShape.circle,
+                      boxShadow: isDone
+                          ? [
+                              BoxShadow(
+                                color: TColor.primary.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ]
+                          : null,
                     ),
                     child: Icon(
-                      statusIcons[status] ?? Icons.circle,
-                      color: isDone ? Colors.white : Colors.grey.shade400,
-                      size: 16,
+                      item.status.icon,
+                      color: isDone ? Colors.white : TColor.placeholder,
+                      size: 18,
                     ),
                   ),
                   if (!isLast)
                     Container(
-                      width: 2,
-                      height: 32,
-                      color: isDone
-                          ? TColor.primary
-                          : Colors.grey.shade200,
+                      width: 2.5,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: isDone ? TColor.primary : TColor.border,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
                 ],
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 4),
+                  padding: const EdgeInsets.only(top: 6),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        statusLabels[status] ?? status,
-                        style: TextStyle(
-                          color: isDone
-                              ? TColor.primaryText
-                              : TColor.secondaryText,
+                        item.title,
+                        style: GoogleFonts.plusJakartaSans(
+                          color: isDone ? TColor.primaryText : TColor.secondaryText,
                           fontSize: 14,
-                          fontWeight:
-                              isDone ? FontWeight.w600 : FontWeight.w400,
+                          fontWeight: isDone ? FontWeight.w700 : FontWeight.w400,
                         ),
                       ),
                       if (formattedTime.isNotEmpty)
                         Text(
                           formattedTime,
-                          style: TextStyle(
+                          style: GoogleFonts.plusJakartaSans(
                             color: TColor.secondaryText,
                             fontSize: 12,
                           ),
@@ -467,22 +552,21 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
 
   Widget _buildRiderCard() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: TColor.textfield,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Row(
         children: [
-          // Rider avatar
           Container(
-            width: 48,
-            height: 48,
+            width: 52,
+            height: 52,
             decoration: BoxDecoration(
-              color: TColor.primary.withOpacity(0.15),
+              gradient: TColor.premiumGradient,
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.person, color: TColor.primary, size: 28),
+            child: const Icon(Icons.person_rounded, color: Colors.white, size: 28),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -490,8 +574,8 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _rider!['name']?.toString() ?? 'Rider',
-                  style: TextStyle(
+                  _rider!.name,
+                  style: GoogleFonts.plusJakartaSans(
                     color: TColor.primaryText,
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -499,8 +583,8 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Your delivery partner',
-                  style: TextStyle(
+                  _rider!.vehicleType.isNotEmpty ? '${_rider!.vehicleType} • ${_rider!.vehicleNumber}' : 'Your delivery partner',
+                  style: GoogleFonts.plusJakartaSans(
                     color: TColor.secondaryText,
                     fontSize: 12,
                   ),
@@ -508,18 +592,18 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
               ],
             ),
           ),
-          // Call button
-          InkWell(
-            onTap: _callRider,
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: Colors.green,
-                borderRadius: BorderRadius.circular(12),
+          Material(
+            color: TColor.success,
+            borderRadius: BorderRadius.circular(14),
+            child: InkWell(
+              onTap: _callRider,
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                width: 48,
+                height: 48,
+                alignment: Alignment.center,
+                child: const Icon(Icons.call_rounded, color: Colors.white, size: 22),
               ),
-              child: const Icon(Icons.call, color: Colors.white, size: 22),
             ),
           ),
         ],
@@ -531,23 +615,20 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
     required IconData icon,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(14),
+      elevation: 4,
+      shadowColor: Colors.black.withOpacity(0.1),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          width: 44,
+          height: 44,
+          alignment: Alignment.center,
+          child: Icon(icon, color: TColor.primaryText, size: 20),
         ),
-        child: Icon(icon, color: TColor.primaryText, size: 20),
       ),
     );
   }

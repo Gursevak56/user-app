@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:food_delivery/common/color_extension.dart';
-import 'package:food_delivery/common_widget/round_icon_button.dart';
-import 'package:food_delivery/view/checkout/add_card_view.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-import '../../common_widget/round_button.dart';
 import 'my_order_view.dart';
 
 class PaymentDetailsView extends StatefulWidget {
@@ -14,30 +12,28 @@ class PaymentDetailsView extends StatefulWidget {
 }
 
 class _PaymentDetailsViewState extends State<PaymentDetailsView> {
-  List cardArr = [
-    {
-      "icon": "assets/img/visa_icon.png",
-      "card": "**** **** **** 2187",
-    }
-  ];
+  List<Map<String, dynamic>> cardArr = [];
+
+  int selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: TColor.white,
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      resizeToAvoidBottomInset: true,
+      backgroundColor: TColor.background,
       appBar: AppBar(
         backgroundColor: TColor.white,
         scrolledUnderElevation: 0,
         elevation: 0,
         leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: Image.asset("assets/img/btn_back.png", width: 20, height: 20),
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
         ),
         title: Text(
-          "Payment Details",
-          style: TextStyle(
+          "Payment Methods",
+          style: GoogleFonts.plusJakartaSans(
             color: TColor.primaryText,
             fontSize: 20,
             fontWeight: FontWeight.w800,
@@ -45,193 +41,309 @@ class _PaymentDetailsViewState extends State<PaymentDetailsView> {
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 20.0),
+            padding: const EdgeInsets.only(right: 12.0),
             child: IconButton(
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const MyOrderView()),
+                  MaterialPageRoute(
+                      builder: (context) => const MyOrderView()),
                 );
               },
-              icon: Image.asset(
-                "assets/img/shopping_cart.png",
-                width: 25,
-                height: 25,
-                color: TColor.primary,
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: TColor.primaryLight,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.shopping_bag_outlined,
+                  size: 20,
+                  color: TColor.primary,
+                ),
               ),
             ),
           ),
         ],
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(25, 0, 0, 15),
-                child: Text(
-                  "Customize your payment method",
-                  style: TextStyle(
-                      color: TColor.primaryText,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700),
-                ),
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ─── Default Method ───
+            _buildSectionCard(
+              icon: Icons.payments_rounded,
+              title: "Default Payment",
+              child: _buildPaymentOption(
+                icon: Icons.money_rounded,
+                title: "Cash on Delivery",
+                subtitle: "Pay when you receive your order",
+                isSelected: selectedIndex == 0,
+                onTap: () => setState(() => selectedIndex = 0),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 25),
-                child: Divider(
-                  color: TColor.secondaryText.withOpacity(0.4),
-                  height: 1,
-                ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // ─── Digital Payments ───
+            _buildSectionCard(
+              icon: Icons.account_balance_rounded,
+              title: "Digital Payments",
+              child: Column(
+                children: [
+                  _buildPaymentOption(
+                    icon: Icons.account_balance_rounded,
+                    title: "UPI",
+                    subtitle: "Google Pay, PhonePe, Paytm",
+                    isSelected: selectedIndex == 1,
+                    onTap: () => setState(() => selectedIndex = 1),
+                  ),
+                ],
               ),
-              const SizedBox(
-                height: 15,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: TColor.textfield,
-                      boxShadow: const [
-                        BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 15,
-                            offset: Offset(0, 9))
-                      ]),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 15, horizontal: 35),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Cash/Card On Delivery",
-                              style: TextStyle(
-                                  color: TColor.primaryText,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700),
+            ),
+
+            const SizedBox(height: 12),
+
+            // ─── Saved Cards ───
+            _buildSectionCard(
+              icon: Icons.credit_card_rounded,
+              title: "Saved Cards",
+              child: Column(
+                children: [
+                  if (cardArr.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        "No saved cards available.",
+                        style: GoogleFonts.plusJakartaSans(
+                          color: TColor.secondaryText,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ...List.generate(cardArr.length, (index) {
+                    final card = cardArr[index];
+                    return Container(
+                      margin: EdgeInsets.only(
+                          top: index > 0 ? 8 : 0),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: TColor.textfield,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: TColor.border),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: TColor.white,
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            Image.asset(
-                              "assets/img/check.png",
-                              width: 20,
-                              height: 20,
+                            child: Icon(
+                              card['icon'] as IconData,
                               color: TColor.primary,
+                              size: 20,
                             ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 35),
-                        child: Divider(
-                          color: TColor.secondaryText.withOpacity(0.4),
-                          height: 1,
-                        ),
-                      ),
-                      ListView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        padding: EdgeInsets.zero,
-                        itemCount: cardArr.length,
-                        itemBuilder: ((context, index) {
-                          var cObj = cardArr[index] as Map? ?? {};
-                          return Container(
-                            margin: const EdgeInsets.symmetric(
-                                vertical: 15, horizontal: 35),
-                            child: Row(
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Image.asset(
-                                  cObj["icon"].toString(),
-                                  width: 50,
-                                  height: 35,
-                                  fit: BoxFit.contain,
-                                ),
-                                const SizedBox(
-                                  width: 15,
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    cObj["card"].toString(),
-                                    style: TextStyle(
-                                        color: TColor.secondaryText,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600),
+                                Text(
+                                  (card['type'] as String? ?? '').toUpperCase(),
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: TColor.primaryText,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
-                                SizedBox(
-                                  width: 100,
-                                  height: 28,
-                                  child: RoundButton(
-                                    title: 'Delete Card',
+                                const SizedBox(height: 2),
+                                Text(
+                                  card['card'] as String? ?? '',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: TColor.secondaryText,
                                     fontSize: 12,
-                                    onPressed: () {},
-                                    type: RoundButtonType.textPrimary,
+                                    letterSpacing: 1.5,
                                   ),
-                                )
+                                ),
                               ],
                             ),
-                          );
-                        }),
+                          ),
+                          Material(
+                            color: TColor.primaryLight,
+                            borderRadius: BorderRadius.circular(8),
+                            child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  cardArr.removeAt(index);
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(8),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8),
+                                child: Icon(Icons.delete_outline_rounded,
+                                    color: TColor.primary, size: 18),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 35),
-                        child: Divider(
-                          color: TColor.secondaryText.withOpacity(0.4),
-                          height: 1,
+                    );
+                  }),
+
+                  // Add card button
+                  const SizedBox(height: 12),
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        // Add card action
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: TColor.primary.withOpacity(0.3),
+                            width: 1.5,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 15, horizontal: 35),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
+                            Icon(Icons.add_rounded,
+                                color: TColor.primary, size: 20),
+                            const SizedBox(width: 8),
                             Text(
-                              "Other Methods",
-                              style: TextStyle(
-                                  color: TColor.primaryText,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700),
+                              "Add New Card",
+                              style: GoogleFonts.plusJakartaSans(
+                                color: TColor.primary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(
-                        height: 15,
-                      ),
-                    ],
+                    ),
                   ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 32),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionCard({
+    required IconData icon,
+    required String title,
+    required Widget child,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: TColor.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: TColor.cardShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: TColor.primary, size: 18),
+              const SizedBox(width: 10),
+              Text(
+                title,
+                style: GoogleFonts.plusJakartaSans(
+                  color: TColor.primaryText,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
                 ),
-              ),
-              const SizedBox(
-                height: 35,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 25),
-                child: RoundIconButton(
-                    title: "Add Another Credit/Debit Card",
-                    icon: "assets/img/add.png",
-                    fontSize: 16,
-                    onPressed: () {
-                      showModalBottomSheet(
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          context: context,
-                          builder: (context) {
-                            return const AddCardView();
-                          });
-                      // Navigator.push(context, MaterialPageRoute(builder: (context) => const AddCardView() ));
-                    }),
-              ),
-              const SizedBox(
-                height: 15,
               ),
             ],
           ),
+          const SizedBox(height: 14),
+          child,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentOption({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isSelected ? TColor.primaryLight : TColor.textfield,
+          borderRadius: BorderRadius.circular(12),
+          border: isSelected
+              ? Border.all(color: TColor.primary, width: 1.5)
+              : Border.all(color: TColor.border),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? TColor.primary.withOpacity(0.1)
+                    : TColor.white,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: TColor.primary, size: 20),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.plusJakartaSans(
+                      color: TColor.primaryText,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.plusJakartaSans(
+                      color: TColor.secondaryText,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              isSelected
+                  ? Icons.radio_button_checked_rounded
+                  : Icons.radio_button_off_rounded,
+              color: TColor.primary,
+              size: 22,
+            ),
+          ],
         ),
       ),
     );

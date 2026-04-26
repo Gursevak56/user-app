@@ -29,6 +29,9 @@ class _ONPLViewState extends State<ONPLView>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      resizeToAvoidBottomInset: true,
       backgroundColor: TColor.white,
       body: SingleChildScrollView(
         child: Padding(
@@ -133,7 +136,7 @@ class _ONPLViewState extends State<ONPLView>
 
               // ✅ Card with shadow polish
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 decoration: BoxDecoration(
                   color: TColor.white,
                   borderRadius: BorderRadius.circular(20),

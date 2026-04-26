@@ -8,7 +8,7 @@ class OrderTrackingService {
     Map<String, dynamic>? result;
 
     await ServiceCall.get(
-      "${SVKey.restaurantBaseUrl}/api/orders/$orderId/track",
+      "${SVKey.restaurantBaseUrl}/api/orders/$orderId",
       isToken: true,
       withSuccess: (responseObj) async {
         if (responseObj[KKey.statusCode] == 200) {

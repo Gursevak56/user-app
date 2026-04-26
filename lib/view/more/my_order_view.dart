@@ -53,6 +53,9 @@ class _MyOrderViewState extends State<MyOrderView> {
     final bottomPad = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      resizeToAvoidBottomInset: true,
       backgroundColor: TColor.background,
       appBar: AppBar(
         backgroundColor: TColor.white,
@@ -200,13 +203,23 @@ class _MyOrderViewState extends State<MyOrderView> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(28),
+            padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: TColor.primaryLight,
+              color: TColor.white,
               shape: BoxShape.circle,
+              boxShadow: TColor.cardShadow,
             ),
-            child: Icon(Icons.shopping_bag_outlined,
-                size: 56, color: TColor.primary),
+            child: Image.asset(
+              "assets/img/app-logo-update.png",
+              width: 80,
+              height: 80,
+              color: TColor.primary.withOpacity(0.5),
+              errorBuilder: (_, __, ___) => Icon(
+                Icons.shopping_bag_outlined,
+                size: 64,
+                color: TColor.primary.withOpacity(0.5),
+              ),
+            ),
           ),
           const SizedBox(height: 24),
           Text(
@@ -370,7 +383,7 @@ class _MyOrderViewState extends State<MyOrderView> {
   Widget _buildCouponSection() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: TColor.white,
         borderRadius: BorderRadius.circular(14),
@@ -475,7 +488,7 @@ class _MyOrderViewState extends State<MyOrderView> {
   Widget _buildNotesSection() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: TColor.white,
         borderRadius: BorderRadius.circular(14),
@@ -594,7 +607,7 @@ class _MyOrderViewState extends State<MyOrderView> {
   Widget _buildBillingSummary(double subtotal) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: TColor.white,
         borderRadius: BorderRadius.circular(14),
@@ -657,16 +670,10 @@ class _MyOrderViewState extends State<MyOrderView> {
   // ─── Sticky Checkout Bar ───
   Widget _buildStickyCheckoutBar(double subtotal, double bottomPad) {
     return Container(
-      padding: EdgeInsets.fromLTRB(16, 12, 16, 12 + bottomPad),
+      padding: EdgeInsets.fromLTRB(16, 14, 16, 14 + bottomPad),
       decoration: BoxDecoration(
         color: TColor.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 12,
-            offset: const Offset(0, -4),
-          ),
-        ],
+        boxShadow: TColor.stickyBarShadow,
       ),
       child: RoundButton(
         title: "Checkout  •  ₹${subtotal.toStringAsFixed(0)}",

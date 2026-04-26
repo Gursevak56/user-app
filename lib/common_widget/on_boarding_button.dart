@@ -15,12 +15,12 @@ class CustomOutlinedButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: TColor.primary.withOpacity(0.25),
+            color: TColor.primary.withOpacity(0.15),
             spreadRadius: 0,
-            blurRadius: 12,
+            blurRadius: 16,
             offset: const Offset(0, 4),
           )
         ],
@@ -30,17 +30,17 @@ class CustomOutlinedButton extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           backgroundColor: TColor.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(16),
           ),
           side: BorderSide(color: TColor.primary, width: 1.5),
           foregroundColor: TColor.primary,
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 16),
         ),
         child: Text(
           title,
           style: GoogleFonts.plusJakartaSans(
             fontWeight: FontWeight.w700,
-            fontSize: 18,
+            fontSize: 16,
           ),
         ),
       ),

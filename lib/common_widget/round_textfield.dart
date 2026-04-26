@@ -10,6 +10,7 @@ class RoundTextfield extends StatelessWidget {
   final bool obscureText;
   final Color? bgColor;
   final Widget? left;
+  final ValueChanged<String>? onChanged;
 
   const RoundTextfield({
     super.key,
@@ -19,6 +20,7 @@ class RoundTextfield extends StatelessWidget {
     this.bgColor,
     this.left,
     this.obscureText = false,
+    this.onChanged,
   });
 
   @override
@@ -32,16 +34,18 @@ class RoundTextfield extends StatelessWidget {
       child: Row(
         children: [
           if (left != null)
-            Padding(padding: const EdgeInsets.only(left: 15), child: left!),
+            Padding(padding: const EdgeInsets.only(left: 14), child: left!),
           Expanded(
             child: TextField(
               autocorrect: false,
               controller: controller,
               obscureText: obscureText,
               keyboardType: keyboardType,
+              onChanged: onChanged,
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 15,
                 color: TColor.primaryText,
+                fontWeight: FontWeight.w500,
               ),
               decoration: InputDecoration(
                 contentPadding: const EdgeInsets.symmetric(
@@ -53,7 +57,7 @@ class RoundTextfield extends StatelessWidget {
                 hintText: hintText,
                 hintStyle: GoogleFonts.plusJakartaSans(
                   color: TColor.placeholder,
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.w400,
                 ),
               ),
@@ -90,7 +94,7 @@ class RoundTitleTextfield extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 56,
+      height: 58,
       decoration: BoxDecoration(
         color: bgColor ?? TColor.textfield,
         borderRadius: BorderRadius.circular(14),
@@ -99,12 +103,12 @@ class RoundTitleTextfield extends StatelessWidget {
       child: Row(
         children: [
           if (left != null)
-            Padding(padding: const EdgeInsets.only(left: 15), child: left!),
+            Padding(padding: const EdgeInsets.only(left: 14), child: left!),
           Expanded(
             child: Stack(
               children: [
                 Container(
-                  height: 56,
+                  height: 58,
                   margin: const EdgeInsets.only(top: 8),
                   alignment: Alignment.topLeft,
                   child: TextField(
@@ -116,6 +120,7 @@ class RoundTitleTextfield extends StatelessWidget {
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 14,
                       color: TColor.primaryText,
+                      fontWeight: FontWeight.w500,
                     ),
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.symmetric(
@@ -133,15 +138,15 @@ class RoundTitleTextfield extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  height: 56,
+                  height: 58,
                   margin: const EdgeInsets.only(top: 10, left: 16),
                   alignment: Alignment.topLeft,
                   child: Text(
                     title,
                     style: GoogleFonts.plusJakartaSans(
-                      color: TColor.secondaryText,
+                      color: TColor.primary,
                       fontSize: 11,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),

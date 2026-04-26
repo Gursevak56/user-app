@@ -34,7 +34,6 @@ class _ProfileViewState extends State<ProfileView> {
   @override
   void initState() {
     super.initState();
-    // If not logged in, show auth sheet first
     if (!Globs.udValueBool(Globs.userLogin)) {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         final loggedIn = await AuthBottomSheet.show(context);
@@ -50,18 +49,14 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   void _fetchProfile() async {
-    setState(() {
-      isLoading = true;
-    });
+    setState(() => isLoading = true);
 
     await ServiceCall.get(
       SVKey.svProfile,
       isToken: true,
       withSuccess: (responseObj) async {
         if (!mounted) return;
-        setState(() {
-          isLoading = false;
-        });
+        setState(() => isLoading = false);
 
         if (responseObj['status'] == 'success' && responseObj['data'] != null) {
           final data = responseObj['data'] as Map<String, dynamic>;
@@ -70,23 +65,20 @@ class _ProfileViewState extends State<ProfileView> {
           txtEmail.text = data['email']?.toString() ?? '';
           txtMobile.text = data['phone']?.toString() ?? '';
           profileImageUrl = data['profile_image_url']?.toString();
-          
-          // Cache profile locally
           Globs.udSet(data, Globs.userProfile);
           setState(() {});
         }
       },
       failure: (err) async {
         if (!mounted) return;
-        setState(() {
-          isLoading = false;
-        });
+        setState(() => isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(err.toString()),
             backgroundColor: TColor.error,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       },
@@ -94,21 +86,21 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   void _updateProfile() async {
-    // Validate inputs
     if (txtFirstName.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text("First name is required"),
           backgroundColor: TColor.error,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       );
       return;
     }
 
     Globs.showHUD();
-    
+
     final payload = {
       "first_name": txtFirstName.text.trim(),
       "last_name": txtLastName.text.trim(),
@@ -136,7 +128,8 @@ class _ProfileViewState extends State<ProfileView> {
             ),
             backgroundColor: TColor.success,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       },
@@ -149,7 +142,8 @@ class _ProfileViewState extends State<ProfileView> {
             content: Text(err.toString()),
             backgroundColor: TColor.error,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       },
@@ -182,7 +176,7 @@ class _ProfileViewState extends State<ProfileView> {
           errorWidget: (context, url, error) => Icon(
             Icons.person_rounded,
             size: 50,
-            color: TColor.primary.withOpacity(0.5),
+            color: Colors.white.withOpacity(0.7),
           ),
         ),
       );
@@ -190,7 +184,7 @@ class _ProfileViewState extends State<ProfileView> {
       return Icon(
         Icons.person_rounded,
         size: 50,
-        color: TColor.primary.withOpacity(0.5),
+        color: Colors.white.withOpacity(0.7),
       );
     }
   }
@@ -198,24 +192,10 @@ class _ProfileViewState extends State<ProfileView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      resizeToAvoidBottomInset: true,
       backgroundColor: TColor.background,
-      appBar: AppBar(
-        backgroundColor: TColor.white,
-        scrolledUnderElevation: 0,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-        ),
-        title: Text(
-          "Profile",
-          style: GoogleFonts.plusJakartaSans(
-            color: TColor.primaryText,
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
       body: isLoading
           ? Center(
               child: CircularProgressIndicator(
@@ -223,164 +203,175 @@ class _ProfileViewState extends State<ProfileView> {
                 strokeWidth: 2.5,
               ),
             )
-          : SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 20),
-                  // Profile header card
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    padding: const EdgeInsets.all(24),
+          : CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                // ─── Premium Profile Header ───
+                SliverToBoxAdapter(
+                  child: Container(
                     decoration: BoxDecoration(
-                      color: TColor.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 12,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+                      gradient: LinearGradient(
+                        colors: [TColor.primary, TColor.primaryDark],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                     ),
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 100,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            color: TColor.primaryLight,
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          alignment: Alignment.center,
-                          child: _buildProfileImage(),
-                        ),
-                        const SizedBox(height: 8),
-                        TextButton.icon(
-                          onPressed: () async {
-                            image = await picker.pickImage(
-                                source: ImageSource.gallery);
-                            setState(() {});
-                          },
-                          icon: Icon(Icons.camera_alt_rounded,
-                              color: TColor.primary, size: 16),
-                          label: Text(
-                            "Change Photo",
-                            style: GoogleFonts.plusJakartaSans(
-                              color: TColor.primary,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          txtFirstName.text.isNotEmpty
-                              ? "Hi there ${txtFirstName.text}!"
-                              : "Hi there!",
-                          style: GoogleFonts.plusJakartaSans(
-                            color: TColor.primaryText,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        TextButton(
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (ctx) => AlertDialog(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
+                    child: SafeArea(
+                      bottom: false,
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            child: Row(
+                              children: [
+                                IconButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  icon: const Icon(
+                                      Icons.arrow_back_ios_new_rounded,
+                                      color: Colors.white,
+                                      size: 20),
                                 ),
-                                title: Text('Sign Out',
+                                Expanded(
+                                  child: Text(
+                                    "My Profile",
+                                    textAlign: TextAlign.center,
                                     style: GoogleFonts.plusJakartaSans(
-                                        color: TColor.primaryText,
-                                        fontWeight: FontWeight.w700)),
-                                content: Text(
-                                    'Are you sure you want to sign out?',
-                                    style: GoogleFonts.plusJakartaSans()),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(ctx),
-                                    child: Text('Cancel',
-                                        style: TextStyle(
-                                            color: TColor.secondaryText)),
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(ctx);
-                                      ServiceCall.logout();
-                                    },
-                                    child: Text('Sign Out',
-                                        style: TextStyle(
-                                            color: TColor.primary)),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                          child: Text(
-                            "Sign Out",
-                            style: GoogleFonts.plusJakartaSans(
-                              color: TColor.secondaryText,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
+                                ),
+                                const SizedBox(width: 48),
+                              ],
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 8),
+                          // Profile avatar
+                          Stack(
+                            children: [
+                              Container(
+                                width: 100,
+                                height: 100,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(50),
+                                  border: Border.all(
+                                      color: Colors.white.withOpacity(0.3),
+                                      width: 3),
+                                ),
+                                alignment: Alignment.center,
+                                child: _buildProfileImage(),
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: GestureDetector(
+                                  onTap: () async {
+                                    image = await picker.pickImage(
+                                        source: ImageSource.gallery);
+                                    setState(() {});
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.15),
+                                          blurRadius: 6,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Icon(
+                                      Icons.camera_alt_rounded,
+                                      size: 16,
+                                      color: TColor.primary,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            txtFirstName.text.isNotEmpty
+                                ? "${txtFirstName.text} ${txtLastName.text}".trim()
+                                : "Your Name",
+                            style: GoogleFonts.plusJakartaSans(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          if (txtEmail.text.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              txtEmail.text,
+                              style: GoogleFonts.plusJakartaSans(
+                                color: Colors.white.withOpacity(0.7),
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 24),
+                        ],
+                      ),
                     ),
                   ),
+                ),
 
-                  const SizedBox(height: 16),
-
-                  // Form card
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    padding: const EdgeInsets.all(20),
+                // ─── Form Card ───
+                SliverToBoxAdapter(
+                  child: Container(
+                    margin: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                     decoration: BoxDecoration(
                       color: TColor.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 12,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: TColor.cardShadow,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          "Personal Information",
-                          style: GoogleFonts.plusJakartaSans(
-                            color: TColor.primaryText,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
+                        Row(
+                          children: [
+                            Icon(Icons.person_outline_rounded,
+                                color: TColor.primary, size: 20),
+                            const SizedBox(width: 8),
+                            Text(
+                              "Personal Information",
+                              style: GoogleFonts.plusJakartaSans(
+                                color: TColor.primaryText,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 20),
                         RoundTitleTextfield(
                           title: "First Name",
                           hintText: "Enter First Name",
                           controller: txtFirstName,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 14),
                         RoundTitleTextfield(
                           title: "Last Name",
                           hintText: "Enter Last Name",
                           controller: txtLastName,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 14),
                         RoundTitleTextfield(
                           title: "Email",
                           hintText: "Enter Email",
                           keyboardType: TextInputType.emailAddress,
                           controller: txtEmail,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 14),
                         RoundTitleTextfield(
                           title: "Mobile No",
                           hintText: "Enter Mobile No",
@@ -388,15 +379,90 @@ class _ProfileViewState extends State<ProfileView> {
                           keyboardType: TextInputType.phone,
                           readOnly: true,
                         ),
-                        const SizedBox(height: 24),
-                        RoundButton(title: "Save", onPressed: _updateProfile),
+                        const SizedBox(height: 28),
+                        RoundButton(title: "Save Changes", onPressed: _updateProfile),
                       ],
                     ),
                   ),
+                ),
 
-                  const SizedBox(height: 30),
-                ],
-              ),
+                // ─── Sign Out ───
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
+                    child: Material(
+                      color: TColor.primaryLight,
+                      borderRadius: BorderRadius.circular(16),
+                      child: InkWell(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)),
+                              title: Text('Sign Out',
+                                  style: GoogleFonts.plusJakartaSans(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 18)),
+                              content: Text(
+                                  'Are you sure you want to sign out?',
+                                  style: GoogleFonts.plusJakartaSans(
+                                      color: TColor.secondaryText,
+                                      fontSize: 14)),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  child: Text('Cancel',
+                                      style: GoogleFonts.plusJakartaSans(
+                                          color: TColor.secondaryText,
+                                          fontWeight: FontWeight.w600)),
+                                ),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: TColor.primary,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(ctx);
+                                      ServiceCall.logout();
+                                    },
+                                    child: Text('Sign Out',
+                                        style: GoogleFonts.plusJakartaSans(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w700)),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(16),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 16, horizontal: 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.logout_rounded,
+                                  size: 20, color: TColor.primary),
+                              const SizedBox(width: 10),
+                              Text(
+                                "Sign Out",
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: TColor.primary,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
     );
   }

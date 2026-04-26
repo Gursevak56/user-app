@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:food_delivery/common/color_extension.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:food_delivery/view/menu/menu_items_view.dart';
+
+import '../common/color_extension.dart';
 
 class Restaurants extends StatelessWidget {
   final Map rObj;
@@ -11,174 +13,161 @@ class Restaurants extends StatelessWidget {
   Widget build(BuildContext context) {
     final imageUrl = rObj["image"]?.toString() ?? "";
     final isNetwork = imageUrl.startsWith("http");
+    final name = rObj["name"]?.toString() ?? "";
+    final foodType = rObj["foodType"]?.toString() ?? "";
+    final rate = rObj["rate"]?.toString() ?? "0";
+    final time = rObj["time"]?.toString() ?? "";
 
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: TColor.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            offset: const Offset(0, 2),
-            blurRadius: 12,
-            spreadRadius: 0,
-          )
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Image
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(16),
-            ),
-            child: SizedBox(
-              height: 150,
-              width: double.infinity,
-              child: isNetwork
-                  ? CachedNetworkImage(
-                      imageUrl: imageUrl,
-                      fit: BoxFit.cover,
-                      placeholder: (_, __) => Container(
-                        color: TColor.textfield,
-                        child: Center(
-                          child: Icon(Icons.restaurant_rounded,
-                              color: TColor.placeholder, size: 40),
-                        ),
-                      ),
-                      errorWidget: (_, __, ___) => Container(
-                        color: TColor.textfield,
-                        child: Center(
-                          child: Icon(Icons.restaurant_rounded,
-                              color: TColor.placeholder, size: 40),
-                        ),
-                      ),
-                    )
-                  : Image.asset(
-                      imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: TColor.textfield,
-                        child: Center(
-                          child: Icon(Icons.restaurant_rounded,
-                              color: TColor.placeholder, size: 40),
-                        ),
-                      ),
-                    ),
-            ),
-          ),
-
-          // Info
-          Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => MenuItemsView(mObj: rObj)),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: TColor.white,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: TColor.cardShadow,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ─── Image Section ───
+            Stack(
               children: [
-                Text(
-                  rObj["name"]?.toString() ?? "",
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: TColor.primaryText,
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(18),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    // Cuisine
-                    if ((rObj["foodType"]?.toString() ?? "").isNotEmpty)
-                      Flexible(
-                        child: Text(
-                          rObj["foodType"].toString(),
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w400,
-                            color: TColor.secondaryText,
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 170,
+                    child: isNetwork
+                        ? CachedNetworkImage(
+                            imageUrl: imageUrl,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => Container(
+                              color: TColor.textfield,
+                              child: Center(
+                                child: Icon(Icons.restaurant_rounded,
+                                    color: TColor.placeholder, size: 40),
+                              ),
+                            ),
+                            errorWidget: (_, __, ___) => Container(
+                              color: TColor.textfield,
+                              child: Center(
+                                child: Icon(Icons.restaurant_rounded,
+                                    color: TColor.placeholder, size: 40),
+                              ),
+                            ),
+                          )
+                        : Image.asset(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              color: TColor.textfield,
+                              child: Center(
+                                child: Icon(Icons.restaurant_rounded,
+                                    color: TColor.placeholder, size: 40),
+                              ),
+                            ),
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    if ((rObj["foodCat"]?.toString() ?? "").isNotEmpty) ...[
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 6),
-                        child: Text("•",
-                            style: TextStyle(
-                                color: TColor.placeholder, fontSize: 12)),
-                      ),
-                      Flexible(
-                        child: Text(
-                          rObj["foodCat"].toString(),
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w400,
-                            color: TColor.secondaryText,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ],
+                  ),
                 ),
-                const SizedBox(height: 10),
-                // Rating + ETA row
-                Row(
-                  children: [
-                    // Rating badge
-                    Container(
+                // Rating badge
+                if (rate != "0" && rate.isNotEmpty)
+                  Positioned(
+                    top: 12,
+                    left: 12,
+                    child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                          horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: TColor.success,
-                        borderRadius: BorderRadius.circular(6),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const Icon(Icons.star_rounded,
-                              color: Colors.white, size: 14),
+                              color: Color(0xFFFFC107), size: 16),
                           const SizedBox(width: 3),
                           Text(
-                            rObj["rate"]?.toString() ?? "0",
+                            rate,
                             style: GoogleFonts.plusJakartaSans(
-                              color: Colors.white,
-                              fontSize: 12,
+                              color: TColor.primaryText,
+                              fontSize: 13,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    // ETA
-                    if ((rObj["time"]?.toString() ?? "").isNotEmpty)
-                      Row(
-                        children: [
-                          Icon(Icons.access_time_rounded,
-                              size: 15, color: TColor.secondaryText),
-                          const SizedBox(width: 4),
-                          Text(
-                            rObj["time"].toString(),
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: TColor.secondaryText,
-                            ),
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
+                  ),
               ],
             ),
-          ),
-        ],
+
+            // ─── Info Section ───
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: GoogleFonts.plusJakartaSans(
+                      color: TColor.primaryText,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  if (foodType.isNotEmpty)
+                    Text(
+                      foodType,
+                      style: GoogleFonts.plusJakartaSans(
+                        color: TColor.secondaryText,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  if (time.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(Icons.schedule_rounded,
+                            size: 15, color: TColor.secondaryText),
+                        const SizedBox(width: 4),
+                        Text(
+                          time,
+                          style: GoogleFonts.plusJakartaSans(
+                            color: TColor.secondaryText,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

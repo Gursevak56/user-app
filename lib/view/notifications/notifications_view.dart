@@ -74,6 +74,9 @@ class _NotificationsViewState extends State<NotificationsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: const Text(
           "Notifications",
@@ -90,7 +93,7 @@ class _NotificationsViewState extends State<NotificationsView> {
               : notifications.isEmpty
                   ? const Center(child: Text("No notifications yet."))
                   : ListView.separated(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       itemCount: notifications.length + (notifications.length < totalItems ? 1 : 0),
                       separatorBuilder: (context, index) => const Divider(),
                       itemBuilder: (context, index) {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:food_delivery/common/color_extension.dart';
-import 'package:food_delivery/common_widget/on_boarding_button.dart';
+import 'package:food_delivery/common/globs.dart';
 import 'package:food_delivery/view/main_tabview/main_tabview.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -15,23 +15,27 @@ class _OnBoardingViewState extends State<OnBoardingView> {
   int selectPage = 0;
   PageController controller = PageController();
 
-  List<Map<String, String>> pageArr = [
+  final List<Map<String, dynamic>> pageArr = [
     {
-      "title": "Order from your favorite restaurants",
+      "title": "Discover Nearby\nRestaurants 🍕",
       "subtitle":
-          "Browse menus and get delicious meals delivered to your door.",
+          "Browse local favorites and find the best dishes around you, curated just for your taste.",
       "image": "assets/img/on_boarding_1.png",
+      "icon": Icons.explore_rounded,
     },
     {
-      "title": "Fast & Safe Delivery",
-      "subtitle": "Your food arrives hot, fresh, and contact-free every time.",
-      "image": "assets/img/on_boarding_2.png",
-    },
-    {
-      "title": "Exclusive Offers & Rewards",
+      "title": "Fast Delivery\nin Minutes 🚴",
       "subtitle":
-          "Unlock discounts, earn points, and enjoy special deals daily.",
+          "Get your food delivered lightning-fast. Hot, fresh, and right to your doorstep.",
+      "image": "assets/img/on_boarding_2.png",
+      "icon": Icons.delivery_dining_rounded,
+    },
+    {
+      "title": "Easy Checkout\n& Live Tracking 📦",
+      "subtitle":
+          "Seamless payments, real-time tracking, and zero hassle. Order with confidence.",
       "image": "assets/img/on_boarding_3.png",
+      "icon": Icons.fact_check_rounded,
     },
   ];
 
@@ -45,158 +49,240 @@ class _OnBoardingViewState extends State<OnBoardingView> {
     });
   }
 
+  void _finishOnboarding() {
+    Globs.udBoolSet(true, "has_onboarded");
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const MainTabView()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var media = MediaQuery.of(context).size;
-    return Scaffold(
-      body: Stack(
-        children: [
-          // Background gradient
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: TColor.primaryGradient,
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-          ),
-          Column(
-            children: [
-              Stack(
-                children: [
-                  SizedBox(
-                    height: media.height * 0.8,
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(40),
-                          bottomRight: Radius.circular(40),
-                        ),
-                      ),
-                      child: PageView.builder(
-                        controller: controller,
-                        itemCount: pageArr.length,
-                        itemBuilder: (context, index) {
-                          final pObj = pageArr[index];
-                          return Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 30),
-                            child: Column(
-                              children: [
-                                SizedBox(height: media.width * 0.2),
-                                Image.asset(
-                                  pObj["image"].toString(),
-                                  width: media.width * 0.65,
-                                  height: media.width * 0.8,
-                                  fit: BoxFit.contain,
-                                ),
-                                SizedBox(height: media.width * 0.15),
-                                Text(
-                                  pObj["title"].toString(),
-                                  textAlign: TextAlign.center,
-                                  style: GoogleFonts.plusJakartaSans(
-                                    color: TColor.primaryText,
-                                    fontSize: 26,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                                SizedBox(height: media.width * 0.04),
-                                Text(
-                                  pObj["subtitle"].toString(),
-                                  textAlign: TextAlign.center,
-                                  style: GoogleFonts.plusJakartaSans(
-                                    color: TColor.secondaryText,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500,
-                                    height: 1.5,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                  // Page indicators
-                  Positioned(
-                    top: media.height * 0.50,
-                    left: 0,
-                    right: 0,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: pageArr.map((e) {
-                        var index = pageArr.indexOf(e);
-                        bool isActive = index == selectPage;
+    final bottomPad = MediaQuery.of(context).padding.bottom;
 
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          height: 8,
-                          width: isActive ? 28 : 8,
-                          decoration: BoxDecoration(
-                            color: isActive
-                                ? TColor.primary
-                                : TColor.placeholder.withOpacity(0.4),
-                            borderRadius: BorderRadius.circular(4),
+    return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      resizeToAvoidBottomInset: true,
+      backgroundColor: TColor.white,
+      body: Column(
+        children: [
+          // ─── Illustration + Content Area ───
+          Expanded(
+            child: PageView.builder(
+              controller: controller,
+              itemCount: pageArr.length,
+              itemBuilder: (context, index) {
+                final pObj = pageArr[index];
+                return SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      // ─── Top Illustration Area ───
+                      Container(
+                        width: media.width,
+                        height: media.height * 0.5,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              TColor.primary.withOpacity(0.05),
+                              TColor.primaryLight,
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
                           ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ],
-              ),
-              // Bottom buttons
-              Expanded(
-                child: selectPage != 2
-                    ? Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          borderRadius: const BorderRadius.only(
+                            bottomLeft: Radius.circular(48),
+                            bottomRight: Radius.circular(48),
+                          ),
+                        ),
+                        child: Stack(
+                          alignment: Alignment.center,
                           children: [
-                            CustomOutlinedButton(
-                              onPressed: () {
-                                if (selectPage < 2) {
-                                  controller.animateToPage(
-                                    selectPage + 1,
-                                    duration:
-                                        const Duration(milliseconds: 400),
-                                    curve: Curves.easeInOut,
-                                  );
-                                }
-                              },
-                              title: "Next",
+                            // Decorative circle
+                            Positioned(
+                              top: media.height * 0.08,
+                              child: Container(
+                                width: media.width * 0.65,
+                                height: media.width * 0.65,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: TColor.primary.withOpacity(0.06),
+                                ),
+                              ),
                             ),
-                            CustomOutlinedButton(
-                              onPressed: () {
-                                controller.animateToPage(
-                                  2,
-                                  duration: const Duration(milliseconds: 400),
-                                  curve: Curves.easeInOut,
-                                );
-                              },
-                              title: "Skip",
+                            // Main illustration
+                            Padding(
+                              padding: EdgeInsets.only(top: media.height * 0.06),
+                              child: Image.asset(
+                                pObj["image"].toString(),
+                                width: media.width * 0.6,
+                                height: media.width * 0.7,
+                                fit: BoxFit.contain,
+                                errorBuilder: (_, __, ___) => Container(
+                                  width: media.width * 0.4,
+                                  height: media.width * 0.4,
+                                  decoration: BoxDecoration(
+                                    color: TColor.primary.withOpacity(0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    pObj["icon"] as IconData,
+                                    size: 80,
+                                    color: TColor.primary,
+                                  ),
+                                ),
+                              ),
                             ),
                           ],
                         ),
-                      )
-                    : Center(
-                        child: CustomOutlinedButton(
-                          onPressed: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const MainTabView(),
+                      ),
+
+                      const SizedBox(height: 24), // Reduced spacer slightly to help text fit naturally
+
+                      // ─── Text Content ───
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        child: Column(
+                          children: [
+                            Text(
+                              pObj["title"].toString(),
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.plusJakartaSans(
+                                color: TColor.primaryText,
+                                fontSize: 26, // Reduced font size by 2 for safety
+                                fontWeight: FontWeight.w800,
+                                height: 1.25,
                               ),
-                            );
-                          },
-                          title: "Get Started",
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              pObj["subtitle"].toString(),
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.plusJakartaSans(
+                                color: TColor.secondaryText,
+                                fontSize: 14, // Reduced font size by 1 space for safety
+                                fontWeight: FontWeight.w400,
+                                height: 1.45,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-              )
-            ],
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // ─── Bottom Controls ───
+          Padding(
+            padding: EdgeInsets.fromLTRB(24, 20, 24, 20 + bottomPad),
+            child: Column(
+              children: [
+                // Progress dots
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(pageArr.length, (index) {
+                    bool isActive = index == selectPage;
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      height: 8,
+                      width: isActive ? 32 : 8,
+                      decoration: BoxDecoration(
+                        color: isActive
+                            ? TColor.primary
+                            : TColor.placeholder.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    );
+                  }),
+                ),
+
+                const SizedBox(height: 28),
+
+                // Buttons
+                if (selectPage < 2) ...[
+                  // Next button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        controller.animateToPage(
+                          selectPage + 1,
+                          duration: const Duration(milliseconds: 400),
+                          curve: Curves.easeInOut,
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: TColor.primary,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Text(
+                        "Next",
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Skip button
+                  TextButton(
+                    onPressed: _finishOnboarding,
+                    child: Text(
+                      "Skip",
+                      style: GoogleFonts.plusJakartaSans(
+                        color: TColor.secondaryText,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ] else ...[
+                  // Get Started button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: _finishOnboarding,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: TColor.primary,
+                        foregroundColor: Colors.white,
+                        elevation: 4,
+                        shadowColor: TColor.primary.withOpacity(0.4),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Get Started",
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.arrow_forward_rounded, size: 20),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
         ],
       ),

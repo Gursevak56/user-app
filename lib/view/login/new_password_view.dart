@@ -3,6 +3,7 @@ import 'package:food_delivery/common/color_extension.dart';
 import 'package:food_delivery/common/extension.dart';
 import 'package:food_delivery/common_widget/round_button.dart';
 import 'package:food_delivery/view/login/login_view.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../common/globs.dart';
 import '../../common/service_call.dart';
 import '../../common_widget/round_textfield.dart';
@@ -22,56 +23,87 @@ class _NewPasswordViewState extends State<NewPasswordView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      resizeToAvoidBottomInset: true,
+      backgroundColor: TColor.white,
+      appBar: AppBar(
+        backgroundColor: TColor.white,
+        scrolledUnderElevation: 0,
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+        ),
+      ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 25),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 25),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(
-                height: 64,
+              const SizedBox(height: 20),
+
+              // Icon
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                decoration: BoxDecoration(
+                  color: TColor.primaryLight,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.password_rounded,
+                  size: 44,
+                  color: TColor.primary,
+                ),
               ),
+
+              const SizedBox(height: 24),
+
               Text(
                 "New Password",
-                style: TextStyle(
-                    color: TColor.primaryText,
-                    fontSize: 30,
-                    fontWeight: FontWeight.w800),
+                style: GoogleFonts.plusJakartaSans(
+                  color: TColor.primaryText,
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-              const SizedBox(
-                height: 15,
-              ),
+              const SizedBox(height: 10),
               Text(
                 "Please enter your new password",
-                style: TextStyle(
-                    color: TColor.secondaryText,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500),
+                style: GoogleFonts.plusJakartaSans(
+                  color: TColor.secondaryText,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-              const SizedBox(
-                height: 60,
-              ),
+
+              const SizedBox(height: 40),
+
               RoundTextfield(
                 hintText: "New Password",
                 controller: txtPassword,
                 obscureText: true,
+                left: Icon(Icons.lock_outline_rounded,
+                    color: TColor.placeholder, size: 20),
               ),
-              const SizedBox(
-                height: 25,
-              ),
+
+              const SizedBox(height: 16),
+
               RoundTextfield(
                 hintText: "Confirm Password",
                 controller: txtConfirmPassword,
                 obscureText: true,
+                left: Icon(Icons.lock_outline_rounded,
+                    color: TColor.placeholder, size: 20),
               ),
-              const SizedBox(
-                height: 30,
-              ),
+
+              const SizedBox(height: 30),
+
               RoundButton(
-                  title: "Next",
-                  onPressed: () {
-                    btnSubmit();
-                  }),
+                title: "Set Password",
+                onPressed: () => btnSubmit(),
+              ),
             ],
           ),
         ),
@@ -79,7 +111,6 @@ class _NewPasswordViewState extends State<NewPasswordView> {
     );
   }
 
-  //TODO: Action
   void btnSubmit() {
     if (txtPassword.text.length < 6) {
       mdShowAlert(Globs.appName, MSG.enterPassword, () {});
@@ -99,8 +130,6 @@ class _NewPasswordViewState extends State<NewPasswordView> {
       "new_password": txtPassword.text
     });
   }
-
-  //TODO: ServiceCall
 
   void serviceCallForgotSetNew(Map<String, dynamic> parameter) {
     Globs.showHUD();
